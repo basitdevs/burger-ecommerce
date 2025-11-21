@@ -17,7 +17,7 @@ export default function CartPage() {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center text-center text-gray-600 px-4">
         <h2 className="text-2xl font-bold mb-2 dark:text-gray-100">Your Cart is Empty</h2>
-        <p className="mb-6 dark:text-gray-200">Looks like you haven't added anything yet.</p>
+        <p className="mb-6 dark:text-gray-200">Looks like you haven&apos;t added anything yet.</p>
         <Button onClick={() => router.push("/")}>Start Shopping</Button>
       </div>
     );

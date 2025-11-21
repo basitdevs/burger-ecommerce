@@ -1,4 +1,6 @@
-"use client"
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+"use client";
 
 import { useState, useMemo } from "react";
 import {
@@ -13,7 +15,15 @@ import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { useCart } from "../context/CartContext";
 
-export default function ProductCollapse({ products, categories, info }: { products: any[]; categories: any[]; info: any; }) {
+export default function ProductCollapse({
+  products,
+  categories,
+  info,
+}: {
+  products: any[];
+  categories: any[];
+  info: any;
+}) {
   const [search, setSearch] = useState("");
   const { addToCart } = useCart();
   const [quantities, setQuantities] = useState<{ [key: number]: number }>({}); // Track qty per product
@@ -103,12 +113,17 @@ export default function ProductCollapse({ products, categories, info }: { produc
                   <Button
                     size="sm"
                     onClick={() =>
-                      handleQtyChange(p.id, Math.max(1, (quantities[p.id] || 1) - 1))
+                      handleQtyChange(
+                        p.id,
+                        Math.max(1, (quantities[p.id] || 1) - 1)
+                      )
                     }
                   >
                     -
                   </Button>
-                  <span className="w-6 text-center">{quantities[p.id] || 1}</span>
+                  <span className="w-6 text-center">
+                    {quantities[p.id] || 1}
+                  </span>
                   <Button
                     size="sm"
                     onClick={() =>
@@ -120,10 +135,7 @@ export default function ProductCollapse({ products, categories, info }: { produc
                 </div>
               </CardContent>
               <CardFooter className="p-3">
-                <Button
-                  className="w-full"
-                  onClick={() => handleAddToCart(p)}
-                >
+                <Button className="w-full" onClick={() => handleAddToCart(p)}>
                   + Add to Cart
                 </Button>
               </CardFooter>
@@ -164,23 +176,35 @@ export default function ProductCollapse({ products, categories, info }: { produc
                             />
                           </div>
                           <CardContent className="p-3">
-                            <h3 className="text-base font-semibold">{p.Title}</h3>
-                            <p className="text-primary font-bold">{p.price} KWD</p>
+                            <h3 className="text-base font-semibold">
+                              {p.Title}
+                            </h3>
+                            <p className="text-primary font-bold">
+                              {p.price} KWD
+                            </p>
                             {/* Quantity selector */}
                             <div className="mt-2 flex items-center gap-2">
                               <Button
                                 size="sm"
                                 onClick={() =>
-                                  handleQtyChange(p.id, Math.max(1, (quantities[p.id] || 1) - 1))
+                                  handleQtyChange(
+                                    p.id,
+                                    Math.max(1, (quantities[p.id] || 1) - 1)
+                                  )
                                 }
                               >
                                 -
                               </Button>
-                              <span className="w-6 text-center">{quantities[p.id] || 1}</span>
+                              <span className="w-6 text-center">
+                                {quantities[p.id] || 1}
+                              </span>
                               <Button
                                 size="sm"
                                 onClick={() =>
-                                  handleQtyChange(p.id, (quantities[p.id] || 1) + 1)
+                                  handleQtyChange(
+                                    p.id,
+                                    (quantities[p.id] || 1) + 1
+                                  )
                                 }
                               >
                                 +

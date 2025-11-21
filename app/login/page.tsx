@@ -44,9 +44,12 @@ export default function LoginPage() {
       } else {
         toast.error(data.message || "Login failed ❌");
       }
-    } catch (err: any) {
-      toast.error(err.message || "Something went wrong ❌");
-    } finally {
+    } catch (err: unknown) {
+  const message =
+    err instanceof Error ? err.message : "Something went wrong ❌";
+
+  toast.error(message);
+} finally {
       setLoading(false);
     }
   };
@@ -105,7 +108,7 @@ export default function LoginPage() {
               {loading ? "Signing in..." : "Login"}
             </Button>
             <p className="text-sm text-gray-500 text-center">
-              Don’t have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link
                 href="/signup"
                 className="text-primary font-medium hover:underline"

@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { User, Mail, Phone } from "lucide-react";
+import { User, Mail } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -65,8 +65,10 @@ export default function SignUp() {
       } else {
         toast.error(data.message || "❌ Something went wrong.");
       }
-    } catch (err: any) {
-      toast.error(err.message || "❌ Something went wrong.");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "❌ Something went wrong.";
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }

@@ -69,7 +69,7 @@ export async function POST(req: Request) {
       success: true,
       message: "Password has been reset successfully.",
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Reset Password Error:", err);
     return NextResponse.json(
       { success: false, message: "Internal Server Error" },

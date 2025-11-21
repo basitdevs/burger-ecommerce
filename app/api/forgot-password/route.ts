@@ -90,7 +90,7 @@ export async function POST(req: Request) {
       message:
         "If an account with that email exists, a reset link has been sent.",
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Forgot Password Error:", err);
     return NextResponse.json(
       { success: false, message: "Internal Server Error" },

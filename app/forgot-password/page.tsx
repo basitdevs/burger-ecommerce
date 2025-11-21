@@ -5,7 +5,14 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
@@ -33,7 +40,7 @@ export default function ForgotPasswordPage() {
       } else {
         toast.error(data.message || "Failed to process request ❌");
       }
-    } catch (err: any) {
+    } catch {
       toast.error("Something went wrong. Please try again later.");
     } finally {
       setLoading(false);
@@ -44,13 +51,16 @@ export default function ForgotPasswordPage() {
     <div className="min-h-[calc(100vh-140px)] flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a] p-4">
       <Card className="w-full max-w-md shadow-lg rounded-2xl">
         <CardHeader className="text-center relative">
-          <Link href="/login" className="absolute left-0 top-0 p-6 text-gray-500 hover:text-primary">
-             <ArrowLeft className="w-5 h-5" />
+          <Link
+            href="/login"
+            className="absolute left-0 top-0 p-6 text-gray-500 hover:text-primary"
+          >
+            <ArrowLeft className="w-5 h-5" />
           </Link>
           <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
           <CardDescription>
-            {submitted 
-              ? "Check your email for instructions." 
+            {submitted
+              ? "Check your email for instructions."
               : "Enter your email to receive a reset link."}
           </CardDescription>
         </CardHeader>
@@ -80,18 +90,25 @@ export default function ForgotPasswordPage() {
           </form>
         ) : (
           <CardContent className="text-center py-6">
-             <div className="mb-4 text-green-600 bg-green-50 p-4 rounded-lg text-sm">
-                We have sent a password reset link to <strong>{email}</strong>. 
-                Please check your inbox and spam folder.
-             </div>
-             <Button variant="outline" className="w-full" onClick={() => setSubmitted(false)}>
-                Try another email
-             </Button>
-             <div className="mt-4">
-               <Link href="/login" className="text-primary font-medium hover:underline text-sm">
-                 Back to Login
-               </Link>
-             </div>
+            <div className="mb-4 text-green-600 bg-green-50 p-4 rounded-lg text-sm">
+              We have sent a password reset link to <strong>{email}</strong>.
+              Please check your inbox and spam folder.
+            </div>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setSubmitted(false)}
+            >
+              Try another email
+            </Button>
+            <div className="mt-4">
+              <Link
+                href="/login"
+                className="text-primary font-medium hover:underline text-sm"
+              >
+                Back to Login
+              </Link>
+            </div>
           </CardContent>
         )}
       </Card>

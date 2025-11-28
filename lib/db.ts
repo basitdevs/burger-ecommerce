@@ -21,13 +21,14 @@ export interface RestaurantInfo {
   phone: string;
 }
 
+// SQL Server config
 const config: SQLConfig = {
-  user: process.env.DB_USER || "db_abece2_ecommerce_admin",
-  password: process.env.DB_PASSWORD || "Mobark12.",
-  server: process.env.DB_HOST || "sql6030.site4now.net",
-  database: process.env.DB_NAME || "db_abece2_ecommerce",
+  user: "db_abece2_ecommerce_admin",
+  password: "Mobark12.",
+  server: "sql6030.site4now.net",
+  database: "db_abece2_ecommerce",
   options: {
-    encrypt: false,
+    encrypt: false, // false for local/on-prem, true for Azure
     trustServerCertificate: true,
     enableArithAbort: true,
   },
@@ -41,6 +42,8 @@ async function getPool(): Promise<ConnectionPool> {
   }
   return poolPromise;
 }
+
+export const getConnection = getPool;
 
 export async function getProducts(): Promise<Product[]> {
   const pool = await getPool();

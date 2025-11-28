@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/ui/Navbar";
 import { ThemeProvider } from "@/components/Providers/Themes/ThemeProviders";
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/components/context/CartContext";
 import { AuthProvider } from "@/components/context/AuthContext"; // Import AuthProvider
+import ConditionalNavbar from "@/components/ui/ConditionalNavbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AuthProvider> {/* Wrap with AuthProvider */}
             <CartProvider>
               <main className="w-full">
-                <Navbar />
+                <ConditionalNavbar />
                 <div className="px-4">
                   {children}
                   <Toaster position="top-center" richColors />

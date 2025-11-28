@@ -1,3 +1,4 @@
+// === components/context/CartContext.tsx ===
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
@@ -22,21 +23,29 @@ const CartContext = createContext<CartContextType | null>(null);
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     const [cart, setCart] = useState<CartItem[]>([]);
+    const [isMounted, setIsMounted] = useState(false);
 
-    // Load cart from localStorage on mount
+    // Load cart from localStorage ONLY on mount
     useEffect(() => {
+        setIsMounted(true);
         if (typeof window !== "undefined") {
             const saved = localStorage.getItem("cart");
-            if (saved) setCart(JSON.parse(saved));
+            if (saved) {
+                try {
+                    setCart(JSON.parse(saved));
+                } catch (e) {
+                    console.error("Failed to parse cart from local storage", e);
+                }
+            }
         }
     }, []);
 
     // Update localStorage whenever cart changes
     useEffect(() => {
-        if (typeof window !== "undefined") {
+        if (isMounted && typeof window !== "undefined") {
             localStorage.setItem("cart", JSON.stringify(cart));
         }
-    }, [cart]);
+    }, [cart, isMounted]);
 
     const addToCart = (item: CartItem) => {
         setCart((prev) => {
@@ -60,7 +69,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         );
     };
 
-    const cartQty = cart.reduce((sum, item) => sum + item.qty, 0);
+    // Calculate qty, but return 0 if not mounted to prevent hydration mismatch
+    const cartQty = isMounted ? cart.reduce((sum, item) => sum + item.qty, 0) : 0;
 
     return (
         <CartContext.Provider
@@ -71,4 +81,10 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     );
 };
 
-export const useCart = () => useContext(CartContext)!;
+export const useCart = () => {
+    const context = useContext(CartContext);
+    if (!context) {
+        throw new Error("useCart must be used within a CartProvider");
+    }
+    return context;
+};

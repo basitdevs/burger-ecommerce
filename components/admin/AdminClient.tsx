@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { Store, Package, List } from "lucide-react";
 import { Product, Category, ExtendedRestaurantInfo } from "@/types/types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import ProductsTab from "@/components/admin/ProductsTab";
 import CategoriesTab from "@/components/admin/CategoriesTab";
 import RestaurantInfoTab from "@/components/admin/RestaurantInfoTab";
@@ -14,8 +20,14 @@ interface AdminProps {
   initialInfo: ExtendedRestaurantInfo | null;
 }
 
-export default function AdminClient({ initialProducts, initialCategories, initialInfo }: AdminProps) {
-  const [activeTab, setActiveTab] = useState<"products" | "categories" | "info">("products");
+export default function AdminClient({
+  initialProducts,
+  initialCategories,
+  initialInfo,
+}: AdminProps) {
+  const [activeTab, setActiveTab] = useState<
+    "products" | "categories" | "info"
+  >("products");
 
   const tabs = [
     { id: "products", label: "Products", icon: Package },
@@ -24,9 +36,9 @@ export default function AdminClient({ initialProducts, initialCategories, initia
   ] as const;
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+    <div className="max-w-7xl mx-auto  md:px-6">
+      <div className="flex flex-col md:flex-row justify-end items-start md:items-center mb-8 gap-4">
+        {/* <h1 className="text-3xl font-bold">Admin Dashboard</h1> */}
 
         {/* Mobile: Shadcn Select */}
         <div className="w-full md:hidden">
@@ -37,7 +49,9 @@ export default function AdminClient({ initialProducts, initialCategories, initia
             <SelectContent>
               {tabs.map((t) => (
                 <SelectItem key={t.id} value={t.id}>
-                  <span className="flex items-center gap-2"><t.icon className="w-4 h-4" /> {t.label}</span>
+                  <span className="flex items-center gap-2">
+                    <t.icon className="w-4 h-4" /> {t.label}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -51,7 +65,9 @@ export default function AdminClient({ initialProducts, initialCategories, initia
               key={t.id}
               onClick={() => setActiveTab(t.id)}
               className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === t.id ? "bg-white shadow text-black" : "text-gray-500 hover:text-black"
+                activeTab === t.id
+                  ? "bg-white shadow text-black"
+                  : "text-gray-500 hover:text-black"
               }`}
             >
               <t.icon className="w-4 h-4 mr-2" /> {t.label}
@@ -61,9 +77,18 @@ export default function AdminClient({ initialProducts, initialCategories, initia
       </div>
 
       <div className="mt-6">
-        {activeTab === "products" && <ProductsTab products={initialProducts} categories={initialCategories} />}
-        {activeTab === "categories" && <CategoriesTab categories={initialCategories} />}
-        {activeTab === "info" && <RestaurantInfoTab initialInfo={initialInfo} />}
+        {activeTab === "products" && (
+          <ProductsTab
+            products={initialProducts}
+            categories={initialCategories}
+          />
+        )}
+        {activeTab === "categories" && (
+          <CategoriesTab categories={initialCategories} />
+        )}
+        {activeTab === "info" && (
+          <RestaurantInfoTab initialInfo={initialInfo} />
+        )}
       </div>
     </div>
   );

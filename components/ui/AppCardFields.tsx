@@ -87,7 +87,7 @@ export default function ProductCollapse({
 
       {/* If searching → show only matching products */}
       {search ? (
-        <div className="grid gap-4 p-4 md:grid-cols-2 lg:grid-cols-3 max-w-4xl mx-auto">
+        <div className="grid gap-4 p-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-4xl mx-auto">
           {filteredProducts.length === 0 && (
             <div className="text-center text-gray-500 col-span-full">
               No products found.
@@ -158,7 +158,7 @@ export default function ProductCollapse({
                     {cat.name}
                   </AccordionTrigger>
                   <AccordionContent>
-                    <div className="grid gap-4 p-2 grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid gap-4 p-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                       {items.length === 0 && (
                         <div className="text-sm text-muted-foreground">
                           No items in this category yet.

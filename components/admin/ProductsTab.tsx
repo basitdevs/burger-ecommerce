@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,10 +17,13 @@ interface ProductsTabProps {
   categories: Category[];
 }
 
-export default function ProductsTab({ products, categories }: ProductsTabProps) {
+export default function ProductsTab({
+  products,
+  categories,
+}: ProductsTabProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  
+
   // State for Modal
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<number | null>(null);
@@ -35,6 +38,12 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
     categoryId: "",
   });
 
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
+
   const handleSave = async () => {
     if (!formData.Title || !formData.price || !formData.categoryId) {
       toast.error("Please fill Title, Price and Category");
@@ -43,7 +52,7 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
     setLoading(true);
 
     const method = editingId ? "PUT" : "POST";
-    const body = editingId 
+    const body = editingId
       ? JSON.stringify({ ...formData, id: editingId })
       : JSON.stringify(formData);
 
@@ -80,7 +89,7 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
       categoryId: product.categoryId.toString(),
     });
     // Scroll to top to see form (optional but helpful on mobile)
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDeleteClick = (id: number) => {
@@ -90,7 +99,7 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
 
   const confirmDeleteProduct = async () => {
     if (!productToDelete) return;
-    
+
     setLoading(true);
     try {
       const res = await fetch("/api/admin/products", {
@@ -111,10 +120,12 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
     }
   };
 
+  if (!hydrated) return null;
+
   return (
     <>
       {/* Confirmation Modal */}
-      <ConfirmModal 
+      <ConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={confirmDeleteProduct}
@@ -127,7 +138,9 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
         {/* Add/Edit Product Form */}
         <Card className="h-fit">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>{editingId ? "Edit Product" : "Add New Product"}</CardTitle>
+            <CardTitle>
+              {editingId ? "Edit Product" : "Add New Product"}
+            </CardTitle>
             {editingId && (
               <Button variant="ghost" size="sm" onClick={resetForm}>
                 <X className="w-4 h-4 mr-2" /> Cancel
@@ -186,9 +199,13 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
             </div>
             <Button onClick={handleSave} disabled={loading} className="w-full">
               {editingId ? (
-                <><Save className="w-4 h-4 mr-2" /> Update Product</>
+                <>
+                  <Save className="w-4 h-4 mr-2" /> Update Product
+                </>
               ) : (
-                <><Plus className="w-4 h-4 mr-2" /> Add Product</>
+                <>
+                  <Plus className="w-4 h-4 mr-2" /> Add Product
+                </>
               )}
             </Button>
           </CardContent>
@@ -204,7 +221,11 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
               {products.map((p) => (
                 <div
                   key={p.id}
-                  className={`flex items-center justify-between p-3 border rounded-lg transition ${editingId === p.id ? "border-primary bg-primary/5" : "bg-card hover:bg-muted/50"}`}
+                  className={`flex items-center justify-between p-3 border rounded-lg transition ${
+                    editingId === p.id
+                      ? "border-primary bg-primary/5"
+                      : "bg-card hover:bg-muted/50"
+                  }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 relative bg-gray-100 rounded overflow-hidden flex-shrink-0">

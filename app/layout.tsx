@@ -4,8 +4,9 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/Providers/Themes/ThemeProviders";
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/components/context/CartContext";
-import { AuthProvider } from "@/components/context/AuthContext"; // Import AuthProvider
+import { AuthProvider } from "@/components/context/AuthContext";
 import ConditionalNavbar from "@/components/ui/ConditionalNavbar";
+import GoogleTranslate from "@/components/GoogleTranslate"; // Import the component
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,10 +26,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <AuthProvider> {/* Wrap with AuthProvider */}
+          <AuthProvider>
             <CartProvider>
+              
+              {/* Load the Google Script Logic here */}
+              <GoogleTranslate />
+
               <main className="w-full">
                 <ConditionalNavbar />
                 <div className="px-4">

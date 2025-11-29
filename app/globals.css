@@ -120,3 +120,35 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Hide the top banner iframe */
+.goog-te-banner-frame.skiptranslate {
+    display: none !important;
+}
+
+/* Hide the original Google Translate widget container */
+#google_translate_element {
+    display: none !important;
+}
+
+/* Hide popups/tooltips on hover */
+.goog-tooltip {
+    display: none !important;
+}
+
+.goog-tooltip:hover {
+    display: none !important;
+}
+
+/* Remove the highlight background color on translated text */
+.goog-text-highlight {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Sometimes Google adds a generic font to the body, this prevents it */
+font {
+    background-color: transparent !important;
+    box-shadow: none !important;
+}

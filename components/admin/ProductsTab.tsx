@@ -228,7 +228,7 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col-reverse md:flex-row gap-1 md:gap-2">
                     <Button
                       variant="ghost"
                       size="icon"

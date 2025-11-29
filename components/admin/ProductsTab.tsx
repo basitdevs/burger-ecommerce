@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Trash, Plus } from "lucide-react";
+import { Trash, Plus, Pencil, Save, X } from "lucide-react"; // Added icons
 import Image from "next/image";
 import { Product, Category } from "@/types/types";
 import { useRouter } from "next/navigation";
@@ -25,45 +25,69 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<number | null>(null);
 
-  const [newProduct, setNewProduct] = useState({
+  // Edit State
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const [formData, setFormData] = useState({
     Title: "",
     price: "",
     image: "",
     categoryId: "",
   });
 
-  const addProduct = async () => {
-    if (!newProduct.Title || !newProduct.price || !newProduct.categoryId) {
+  const handleSave = async () => {
+    if (!formData.Title || !formData.price || !formData.categoryId) {
       toast.error("Please fill Title, Price and Category");
       return;
     }
     setLoading(true);
+
+    const method = editingId ? "PUT" : "POST";
+    const body = editingId 
+      ? JSON.stringify({ ...formData, id: editingId })
+      : JSON.stringify(formData);
+
     try {
       const res = await fetch("/api/admin/products", {
-        method: "POST",
-        body: JSON.stringify(newProduct),
+        method,
+        body,
       });
       const data = await res.json();
       if (data.success) {
-        toast.success("Product added!");
-        setNewProduct({ Title: "", price: "", image: "", categoryId: "" });
+        toast.success(editingId ? "Product updated!" : "Product added!");
+        resetForm();
         router.refresh();
       } else {
         toast.error(data.message);
       }
     } catch (e) {
-      toast.error("Error adding product");
+      toast.error("Error saving product");
     }
     setLoading(false);
   };
 
-  // Open the modal instead of window.confirm
+  const resetForm = () => {
+    setFormData({ Title: "", price: "", image: "", categoryId: "" });
+    setEditingId(null);
+  };
+
+  const handleEditClick = (product: Product) => {
+    setEditingId(product.id);
+    setFormData({
+      Title: product.Title,
+      price: product.price.toString(),
+      image: product.image,
+      categoryId: product.categoryId.toString(),
+    });
+    // Scroll to top to see form (optional but helpful on mobile)
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleDeleteClick = (id: number) => {
     setProductToDelete(id);
     setIsDeleteModalOpen(true);
   };
 
-  // The actual delete logic called by the modal
   const confirmDeleteProduct = async () => {
     if (!productToDelete) return;
     
@@ -76,6 +100,7 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
       if (res.ok) {
         toast.success("Product deleted");
         router.refresh();
+        if (productToDelete === editingId) resetForm();
       }
     } catch (e) {
       toast.error("Error deleting product");
@@ -99,18 +124,23 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Add Product Form */}
+        {/* Add/Edit Product Form */}
         <Card className="h-fit">
-          <CardHeader>
-            <CardTitle>Add New Product</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>{editingId ? "Edit Product" : "Add New Product"}</CardTitle>
+            {editingId && (
+              <Button variant="ghost" size="sm" onClick={resetForm}>
+                <X className="w-4 h-4 mr-2" /> Cancel
+              </Button>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-col space-y-2">
               <Label>Title</Label>
               <Input
-                value={newProduct.Title}
+                value={formData.Title}
                 onChange={(e) =>
-                  setNewProduct({ ...newProduct, Title: e.target.value })
+                  setFormData({ ...formData, Title: e.target.value })
                 }
                 placeholder="Burger"
               />
@@ -120,9 +150,9 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
               <Input
                 type="number"
                 step="0.001"
-                value={newProduct.price}
+                value={formData.price}
                 onChange={(e) =>
-                  setNewProduct({ ...newProduct, price: e.target.value })
+                  setFormData({ ...formData, price: e.target.value })
                 }
                 placeholder="1.500"
               />
@@ -130,9 +160,9 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
             <div className="flex flex-col space-y-2">
               <Label>Image URL</Label>
               <Input
-                value={newProduct.image}
+                value={formData.image}
                 onChange={(e) =>
-                  setNewProduct({ ...newProduct, image: e.target.value })
+                  setFormData({ ...formData, image: e.target.value })
                 }
                 placeholder="https://..."
               />
@@ -141,9 +171,9 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
               <Label>Category</Label>
               <select
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={newProduct.categoryId}
+                value={formData.categoryId}
                 onChange={(e) =>
-                  setNewProduct({ ...newProduct, categoryId: e.target.value })
+                  setFormData({ ...formData, categoryId: e.target.value })
                 }
               >
                 <option value="">Select Category</option>
@@ -154,8 +184,12 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
                 ))}
               </select>
             </div>
-            <Button onClick={addProduct} disabled={loading} className="w-full">
-              <Plus className="w-4 h-4 mr-2" /> Add Product
+            <Button onClick={handleSave} disabled={loading} className="w-full">
+              {editingId ? (
+                <><Save className="w-4 h-4 mr-2" /> Update Product</>
+              ) : (
+                <><Plus className="w-4 h-4 mr-2" /> Add Product</>
+              )}
             </Button>
           </CardContent>
         </Card>
@@ -170,7 +204,7 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
               {products.map((p) => (
                 <div
                   key={p.id}
-                  className="flex items-center justify-between p-3 border rounded-lg bg-card hover:bg-muted/50 transition"
+                  className={`flex items-center justify-between p-3 border rounded-lg transition ${editingId === p.id ? "border-primary bg-primary/5" : "bg-card hover:bg-muted/50"}`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 relative bg-gray-100 rounded overflow-hidden flex-shrink-0">
@@ -194,14 +228,24 @@ export default function ProductsTab({ products, categories }: ProductsTabProps) 
                       </p>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteClick(p.id)} // Open Modal
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash className="w-4 h-4" />
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEditClick(p)}
+                      className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteClick(p.id)}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
               {products.length === 0 && (

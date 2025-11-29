@@ -5,16 +5,21 @@ import { getConnection } from "@/lib/db";
 export async function PUT(req: Request) {
   try {
     const { id, name, tagline, logoUrl, phone, address, email } = await req.json();
+    
+    if (!id) {
+        return NextResponse.json({ success: false, message: "Restaurant ID is missing" }, { status: 400 });
+    }
+
     const pool = await getConnection();
 
-    // We assume the DB table has 'address' and 'email' columns even if lib/db.ts doesn't fetch them
     await pool.request()
       .input("id", id)
       .input("name", name)
       .input("tagline", tagline)
       .input("logoUrl", logoUrl)
       .input("phone", phone)
-      .input("address", address || "")
+      // Ensure we don't pass null to DB if column forbids it, default to empty string
+      .input("address", address || "") 
       .input("email", email || "")
       .query(`
         UPDATE RestaurantInfo 

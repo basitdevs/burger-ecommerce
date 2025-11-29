@@ -13,12 +13,15 @@ export interface Category {
   name: string;
 }
 
+// Updated Interface to include address and email
 export interface RestaurantInfo {
   id: number;
   name: string;
   tagline: string;
   logoUrl: string;
   phone: string;
+  address: string;
+  email: string;
 }
 
 // SQL Server config
@@ -28,7 +31,7 @@ const config: SQLConfig = {
   server: "sql6030.site4now.net",
   database: "db_abece2_ecommerce",
   options: {
-    encrypt: false, // false for local/on-prem, true for Azure
+    encrypt: false,
     trustServerCertificate: true,
     enableArithAbort: true,
   },
@@ -67,8 +70,9 @@ export async function getCategories(): Promise<Category[]> {
 
 export async function getRestaurantInfo(): Promise<RestaurantInfo | null> {
   const pool = await getPool();
+  // Added address and email to the SELECT statement
   const result = await pool.request().query(`
-    SELECT TOP 1 id, name, tagline, logoUrl, phone
+    SELECT TOP 1 id, name, tagline, logoUrl, phone, address, email
     FROM dbo.RestaurantInfo
   `);
   return result.recordset[0] || null;

@@ -23,6 +23,30 @@ export async function POST(req: Request) {
   }
 }
 
+// UPDATE Product (New)
+export async function PUT(req: Request) {
+  try {
+    const { id, Title, price, image, categoryId } = await req.json();
+    const pool = await getConnection();
+
+    await pool.request()
+      .input("id", id)
+      .input("Title", Title)
+      .input("price", price)
+      .input("image", image)
+      .input("categoryId", categoryId)
+      .query(`
+        UPDATE Products 
+        SET Title=@Title, price=@price, image=@image, categoryId=@categoryId
+        WHERE id=@id
+      `);
+
+    return NextResponse.json({ success: true, message: "Product updated" });
+  } catch (err: any) {
+    return NextResponse.json({ success: false, message: err.message }, { status: 500 });
+  }
+}
+
 // DELETE Product
 export async function DELETE(req: Request) {
   try {

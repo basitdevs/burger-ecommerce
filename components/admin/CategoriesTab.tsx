@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Trash } from "lucide-react";
+import { Trash, Pencil, X } from "lucide-react"; // Added Pencil, X
 import { Category } from "@/types/types";
 import { useRouter } from "next/navigation";
 import ConfirmModal from "./ConfirmModal"; 
@@ -18,31 +18,51 @@ export default function CategoriesTab({ categories }: CategoriesTabProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [newCatName, setNewCatName] = useState("");
+  
+  // Edit State
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   // Modal State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
 
-  const addCategory = async () => {
+  const handleSubmit = async () => {
     if (!newCatName) return;
     setLoading(true);
+
+    const method = editingId ? "PUT" : "POST";
+    const body = editingId 
+      ? JSON.stringify({ id: editingId, name: newCatName })
+      : JSON.stringify({ name: newCatName });
+
     try {
       const res = await fetch("/api/admin/categories", {
-        method: "POST",
-        body: JSON.stringify({ name: newCatName }),
+        method,
+        body,
       });
       const data = await res.json();
       if (data.success) {
-        toast.success("Category added!");
+        toast.success(editingId ? "Category updated!" : "Category added!");
         setNewCatName("");
+        setEditingId(null); // Reset edit mode
         router.refresh();
       } else {
         toast.error(data.message);
       }
     } catch (e) {
-      toast.error("Error adding category");
+      toast.error("Error saving category");
     }
     setLoading(false);
+  };
+
+  const handleEditClick = (category: Category) => {
+    setEditingId(category.id);
+    setNewCatName(category.name);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setNewCatName("");
   };
 
   // Trigger Modal
@@ -64,6 +84,8 @@ export default function CategoriesTab({ categories }: CategoriesTabProps) {
       if (res.ok) {
         toast.success("Category deleted");
         router.refresh();
+        // If we deleted the category being edited, reset edit mode
+        if (categoryToDelete === editingId) cancelEdit();
       }
     } catch (e) {
       toast.error("Error deleting category");
@@ -88,7 +110,7 @@ export default function CategoriesTab({ categories }: CategoriesTabProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <Card className="h-fit">
           <CardHeader>
-            <CardTitle>Add Category</CardTitle>
+            <CardTitle>{editingId ? "Edit Category" : "Add Category"}</CardTitle>
           </CardHeader>
           <CardContent className="flex gap-3">
             <Input
@@ -96,8 +118,13 @@ export default function CategoriesTab({ categories }: CategoriesTabProps) {
               value={newCatName}
               onChange={(e) => setNewCatName(e.target.value)}
             />
-            <Button onClick={addCategory} disabled={loading}>
-              Add
+            {editingId && (
+              <Button variant="ghost" onClick={cancelEdit} disabled={loading}>
+                <X className="w-4 h-4" />
+              </Button>
+            )}
+            <Button onClick={handleSubmit} disabled={loading}>
+              {editingId ? "Update" : "Add"}
             </Button>
           </CardContent>
         </Card>
@@ -113,14 +140,24 @@ export default function CategoriesTab({ categories }: CategoriesTabProps) {
                 className="flex justify-between items-center p-3 border rounded-lg"
               >
                 <span className="font-medium">{c.name}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleDeleteClick(c.id)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <Trash className="w-4 h-4" />
-                </Button>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleEditClick(c)}
+                    className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDeleteClick(c.id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <Trash className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </CardContent>

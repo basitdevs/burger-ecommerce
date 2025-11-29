@@ -9,20 +9,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Globe, Check } from "lucide-react";
-import { getCookie, setCookie } from "cookies-next"; 
-
-// Helper to handle cookies if you don't want to install 'cookies-next'
-const setGoogleCookie = (value: string) => {
-  // We set the cookie for the domain and path to ensure Google picks it up
-  document.cookie = `googtrans=${value}; path=/; domain=${window.location.hostname}`;
-  document.cookie = `googtrans=${value}; path=/;`; // Fallback
-};
-
-const getGoogleCookie = () => {
-  const match = document.cookie.match(new RegExp("(^| )googtrans=([^;]+)"));
-  if (match) return match[2];
-  return "/en/en"; // Default
-};
 
 export default function LanguageSwitcher() {
   const [currentLang, setCurrentLang] = useState("/en/en");
@@ -30,18 +16,23 @@ export default function LanguageSwitcher() {
 
   useEffect(() => {
     setMounted(true);
-    const lang = getGoogleCookie();
-    setCurrentLang(lang);
+
+    const match = document.cookie.match(new RegExp("(^| )googtrans=([^;]+)"));
+    if (match) {
+      setCurrentLang(match[2]);
+    } else {
+      setCurrentLang("/en/en");
+    }
   }, []);
 
   const handleLanguageChange = (langCode: string) => {
-    // Google Translate Cookie Format: /source_lang/target_lang
     const cookieValue = `/en/${langCode}`;
-    
-    setGoogleCookie(cookieValue);
+
+    document.cookie = `googtrans=${cookieValue}; path=/; domain=${window.location.hostname}`;
+    document.cookie = `googtrans=${cookieValue}; path=/;`;
+
     setCurrentLang(cookieValue);
-    
-    // Reload the page to apply translation
+
     window.location.reload();
   };
 
@@ -69,7 +60,9 @@ export default function LanguageSwitcher() {
         <DropdownMenuItem onClick={() => handleLanguageChange("ar")}>
           <div className="flex items-center justify-between w-full">
             <span>Arabic</span>
-            {currentLang === "/en/ar" && <Check className="h-4 w-4 ml-2" />}
+            {(currentLang === "/en/ar" || currentLang.includes("ar")) && (
+              <Check className="h-4 w-4 ml-2" />
+            )}
           </div>
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -15,11 +15,53 @@ import {
 } from "@/components/ui/card";
 import { useAuth } from "@/components/context/AuthContext";
 import Link from "next/link";
+import { useLanguage } from "@/context/LanguageContext"; // 1. Import Context
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  
+  // 2. Get Language
+  const { language } = useLanguage();
+
+  // 3. Define Translations
+  const t = {
+    en: {
+      title: "Login",
+      desc: "Enter your credentials to continue",
+      emailLabel: "Email",
+      emailPlaceholder: "Enter your email",
+      passwordLabel: "Password",
+      passwordPlaceholder: "Enter your password",
+      forgotPassword: "Forgot Password?",
+      btnSubmit: "Login",
+      btnLoading: "Signing in...",
+      noAccount: "Don't have an account?",
+      signup: "Sign up",
+      welcome: "Welcome back",
+      loginFailed: "Login failed ❌",
+      genericError: "Something went wrong ❌"
+    },
+    ar: {
+      title: "تسجيل الدخول",
+      desc: "أدخل بياناتك للمتابعة",
+      emailLabel: "البريد الإلكتروني",
+      emailPlaceholder: "أدخل بريدك الإلكتروني",
+      passwordLabel: "كلمة المرور",
+      passwordPlaceholder: "أدخل كلمة المرور",
+      forgotPassword: "نسيت كلمة المرور؟",
+      btnSubmit: "دخول",
+      btnLoading: "جاري الدخول...",
+      noAccount: "ليس لديك حساب؟",
+      signup: "إنشاء حساب",
+      welcome: "مرحباً بعودتك",
+      loginFailed: "فشل تسجيل الدخول ❌",
+      genericError: "حدث خطأ ما ❌"
+    }
+  };
+
+  const content = t[language];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -39,17 +81,16 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (data.success) {
-        toast.success(`Welcome back, ${data.user.name} 🎉`);
+        // Localized Welcome Message
+        toast.success(`${content.welcome}, ${data.user.name} 🎉`);
         login(data.user);
       } else {
-        toast.error(data.message || "Login failed ❌");
+        toast.error(data.message || content.loginFailed);
       }
     } catch (err: unknown) {
-  const message =
-    err instanceof Error ? err.message : "Something went wrong ❌";
-
-  toast.error(message);
-} finally {
+      const message = err instanceof Error ? err.message : content.genericError;
+      toast.error(message);
+    } finally {
       setLoading(false);
     }
   };
@@ -58,43 +99,41 @@ export default function LoginPage() {
     <div className="min-h-[calc(100vh-140px)] flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a] p-4">
       <Card className="w-full max-w-md shadow-lg rounded-2xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Login</CardTitle>
-          <CardDescription>Enter your credentials to continue</CardDescription>
+          <CardTitle className="text-2xl font-bold">{content.title}</CardTitle>
+          <CardDescription>{content.desc}</CardDescription>
         </CardHeader>
 
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="mb-3">
-              <Label htmlFor="email" className="mb-2">
-                Email
+              <Label htmlFor="email" className="mb-2 block text-start">
+                {content.emailLabel}
               </Label>
               <Input
                 id="email"
                 type="email"
                 name="email"
-                placeholder="Enter your email"
+                placeholder={content.emailPlaceholder}
                 value={form.email}
                 onChange={handleChange}
                 required
               />
             </div>
             <div className="mb-3">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="mb-2">
-                  Password
-                </Label>
+              <div className="flex items-center justify-between mb-2">
+                <Label htmlFor="password">{content.passwordLabel}</Label>
                 <Link
                   href="/forgot-password"
                   className="text-xs text-primary font-medium hover:underline"
                 >
-                  Forgot Password?
+                  {content.forgotPassword}
                 </Link>
               </div>
               <Input
                 id="password"
                 type="password"
                 name="password"
-                placeholder="Enter your password"
+                placeholder={content.passwordPlaceholder}
                 value={form.password}
                 onChange={handleChange}
                 required
@@ -105,15 +144,15 @@ export default function LoginPage() {
 
           <CardFooter className="flex flex-col gap-3">
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Login"}
+              {loading ? content.btnLoading : content.btnSubmit}
             </Button>
             <p className="text-sm text-gray-500 text-center">
-              Don&apos;t have an account?{" "}
+              {content.noAccount}{" "}
               <Link
                 href="/signup"
                 className="text-primary font-medium hover:underline"
               >
-                Sign up
+                {content.signup}
               </Link>
             </p>
           </CardFooter>

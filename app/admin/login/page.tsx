@@ -54,7 +54,10 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a] p-4">
+    <div
+      dir="ltr"
+      className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a] p-4"
+    >
       <Card className="w-full max-w-md shadow-lg rounded-2xl border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111]">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-2">
@@ -99,7 +102,11 @@ export default function AdminLoginPage() {
           </CardContent>
 
           <CardFooter>
-            <Button type="submit" className="w-full font-semibold" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full font-semibold"
+              disabled={loading}
+            >
               {loading ? "Verifying..." : "Access Dashboard"}
             </Button>
           </CardFooter>

@@ -23,8 +23,63 @@ import { User, Mail } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/context/LanguageContext"; // 1. Import Context
 
 export default function SignUp() {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // 2. Get Language
+  const { language } = useLanguage();
+
+  // 3. Define Translations
+  const t = {
+    en: {
+      title: "Create an Account",
+      desc: "Fill the form to sign up",
+      country: "Country",
+      countryPlace: "Select Country",
+      kuwait: "Kuwait",
+      mobile: "Mobile Number",
+      mobilePlace: "Enter Your Mobile Number",
+      name: "Name",
+      namePlace: "Enter Your Name",
+      email: "Email",
+      emailPlace: "Enter Your Email",
+      password: "Password",
+      passwordPlace: "Enter Your Password",
+      submit: "Submit",
+      submitting: "Submitting...",
+      termsText: "By registering you agree to our",
+      termsLink: "Terms & Conditions",
+      success: "Account created successfully!",
+      errorGeneric: "Something went wrong ❌"
+    },
+    ar: {
+      title: "إنشاء حساب جديد",
+      desc: "يرجى ملء النموذج للتسجيل",
+      country: "الدولة",
+      countryPlace: "اختر الدولة",
+      kuwait: "الكويت",
+      mobile: "رقم الهاتف",
+      mobilePlace: "أدخل رقم الهاتف",
+      name: "الاسم",
+      namePlace: "أدخل اسمك",
+      email: "البريد الإلكتروني",
+      emailPlace: "أدخل البريد الإلكتروني",
+      password: "كلمة المرور",
+      passwordPlace: "أدخل كلمة المرور",
+      submit: "تسجيل",
+      submitting: "جاري التسجيل...",
+      termsText: "بالتسجيل أنت توافق على",
+      termsLink: "الشروط والأحكام",
+      success: "تم إنشاء الحساب بنجاح!",
+      errorGeneric: "حدث خطأ ما ❌"
+    }
+  };
+
+  const content = t[language];
+
   const [form, setForm] = useState({
     country: "Kuwait",
     mobile: "",
@@ -32,8 +87,6 @@ export default function SignUp() {
     email: "",
     password: "",
   });
-  const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -50,10 +103,9 @@ export default function SignUp() {
       });
 
       const data = await res.json();
-      console.log("Response:", data);
 
       if (data.success) {
-        toast.success("Account created successfully!");
+        toast.success(content.success);
         setForm({
           name: "",
           email: "",
@@ -63,11 +115,11 @@ export default function SignUp() {
         });
         router.push("/login");
       } else {
-        toast.error(data.message || "❌ Something went wrong.");
+        toast.error(data.message || content.errorGeneric);
       }
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : "❌ Something went wrong.";
+        err instanceof Error ? err.message : content.errorGeneric;
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -79,33 +131,38 @@ export default function SignUp() {
       <Card className="w-full max-w-lg shadow-lg rounded-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">
-            Create an Account
+            {content.title}
           </CardTitle>
-          <CardDescription>Fill the form to sign up</CardDescription>
+          <CardDescription>{content.desc}</CardDescription>
         </CardHeader>
 
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {/* Country */}
             <div>
-              <Label htmlFor="country">Country</Label>
+              <Label htmlFor="country" className="block text-start">{content.country}</Label>
               <Select
                 value={form.country}
                 onValueChange={(value) => setForm({ ...form, country: value })}
               >
-                <SelectTrigger className="mt-2">
-                  <SelectValue placeholder="Select Country" />
+                <SelectTrigger className="mt-2 text-start">
+                  <SelectValue placeholder={content.countryPlace} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Kuwait">Kuwait</SelectItem>
+                  <SelectItem value="Kuwait">{content.kuwait}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Mobile Number */}
             <div>
-              <Label htmlFor="mobile">Mobile Number</Label>
-              <div className="flex mt-2">
+              <Label htmlFor="mobile" className="block text-start">{content.mobile}</Label>
+              <div className="flex mt-2" dir="ltr">
+                 {/* 
+                   We force 'ltr' here because phone numbers are technically LTR even in Arabic.
+                   However, if you want the "+965" box on the Right in Arabic, remove dir="ltr".
+                   Standard UX usually keeps numbers LTR.
+                 */}
                 <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-100 text-gray-600 text-sm">
                   +965
                 </span>
@@ -113,7 +170,7 @@ export default function SignUp() {
                   id="mobile"
                   name="mobile"
                   type="text"
-                  placeholder="Enter Your Mobile Number"
+                  placeholder={content.mobilePlace}
                   className="rounded-l-none"
                   value={form.mobile}
                   onChange={handleChange}
@@ -123,15 +180,17 @@ export default function SignUp() {
 
             {/* Name */}
             <div>
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name" className="block text-start">{content.name}</Label>
               <div className="relative mt-2">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                {/* 'start-3' moves icon to Left in EN and Right in AR */}
+                <User className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                {/* 'ps-9' adds padding to Start (Left in EN, Right in AR) */}
                 <Input
                   id="name"
                   name="name"
                   type="text"
-                  placeholder="Enter Your Name"
-                  className="pl-9"
+                  placeholder={content.namePlace}
+                  className="ps-9"
                   value={form.name}
                   onChange={handleChange}
                   required
@@ -141,15 +200,15 @@ export default function SignUp() {
 
             {/* Email */}
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="block text-start">{content.email}</Label>
               <div className="relative mt-2">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Mail className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="Enter Your Email"
-                  className="pl-9"
+                  placeholder={content.emailPlace}
+                  className="ps-9" 
                   value={form.email}
                   onChange={handleChange}
                   required
@@ -159,12 +218,12 @@ export default function SignUp() {
 
             {/* Password */}
             <div>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="block text-start">{content.password}</Label>
               <Input
                 id="password"
                 name="password"
                 type="password"
-                placeholder="Enter Your Password"
+                placeholder={content.passwordPlace}
                 value={form.password}
                 onChange={handleChange}
                 required
@@ -175,15 +234,15 @@ export default function SignUp() {
 
           <CardFooter className="flex flex-col space-y-4 mt-5">
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Submiting..." : "Submit"}
+              {isSubmitting ? content.submitting : content.submit}
             </Button>
             <p className="text-xs text-gray-500 text-center">
-              By registering you agree to our{" "}
+              {content.termsText}{" "}
               <Link
                 href="/"
                 className="text-primary font-medium hover:underline"
               >
-                Terms & Conditions
+                {content.termsLink}
               </Link>
             </p>
           </CardFooter>

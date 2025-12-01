@@ -13,11 +13,49 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
+import { useLanguage } from "@/context/LanguageContext"; // 1. Import Context
 
 export default function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+
+  // 2. Get Language
+  const { language } = useLanguage();
+
+  // 3. Define Translations
+  const t = {
+    en: {
+      title: "Choose a New Password",
+      desc: "Enter a new password for your account below.",
+      labelPass: "New Password",
+      labelConfirm: "Confirm New Password",
+      btnReset: "Reset Password",
+      btnResetting: "Resetting...",
+      errorTitle: "Error",
+      invalidLink: "Invalid or expired password reset link.",
+      errLength: "Password must be at least 6 characters long.",
+      errMatch: "Passwords do not match.",
+      successMsg: "Your password has been reset! Redirecting...",
+      genericError: "Something went wrong ❌"
+    },
+    ar: {
+      title: "تعيين كلمة مرور جديدة",
+      desc: "أدخل كلمة مرور جديدة لحسابك أدناه.",
+      labelPass: "كلمة المرور الجديدة",
+      labelConfirm: "تأكيد كلمة المرور",
+      btnReset: "تعيين كلمة المرور",
+      btnResetting: "جاري التعيين...",
+      errorTitle: "خطأ",
+      invalidLink: "رابط إعادة التعيين غير صالح أو منتهي الصلاحية.",
+      errLength: "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.",
+      errMatch: "كلمتا المرور غير متطابقتين.",
+      successMsg: "تم تغيير كلمة المرور بنجاح! جاري تحويلك...",
+      genericError: "حدث خطأ ما ❌"
+    }
+  };
+
+  const content = t[language];
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -25,9 +63,10 @@ export default function ResetPasswordContent() {
   const [success, setSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Validate Token on Mount
   useEffect(() => {
-    if (!token) setError("Invalid password reset link.");
-  }, [token]);
+    if (!token) setError(content.invalidLink);
+  }, [token, content.invalidLink]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -35,13 +74,14 @@ export default function ResetPasswordContent() {
     setError(null);
     setSuccess(null);
 
+    // Validation using dynamic strings
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long.");
+      setError(content.errLength);
       setIsSubmitting(false);
       return;
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(content.errMatch);
       setIsSubmitting(false);
       return;
     }
@@ -54,29 +94,33 @@ export default function ResetPasswordContent() {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Something went wrong");
+      if (!response.ok) throw new Error(data.message || content.genericError);
 
-      setSuccess("Your password has been reset! Redirecting...");
+      setSuccess(content.successMsg);
+      toast.success(content.successMsg);
       setTimeout(() => router.push("/login"), 3000);
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : "Something went wrong ❌";
+        err instanceof Error ? err.message : content.genericError;
       toast.error(message);
+      // Optional: Set form error if you want it visible on the card
+      // setError(message); 
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Error View (Invalid Token)
   if (!token) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <Card className="w-[400px]">
+      <div className="flex justify-center items-center h-screen bg-gray-50 dark:bg-[#0a0a0a]">
+        <Card className="w-[400px] shadow-lg">
           <CardHeader>
-            <CardTitle>Error</CardTitle>
+            <CardTitle className="text-red-600">{content.errorTitle}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-red-500">
-              {error || "Invalid link."}
+            <p className="text-gray-700 dark:text-gray-300">
+              {error || content.invalidLink}
             </p>
           </CardContent>
         </Card>
@@ -84,19 +128,20 @@ export default function ResetPasswordContent() {
     );
   }
 
+  // Main Form View
   return (
-    <div className="flex justify-center items-center min-h-[calc(100vh-140px)] bg-white dark:bg-[#0a0a0a]">
-      <Card className="w-full max-w-md">
+    <div className="flex justify-center items-center min-h-[calc(100vh-140px)] bg-gray-50 dark:bg-[#0a0a0a] p-4">
+      <Card className="w-full max-w-md shadow-lg rounded-2xl">
         <CardHeader>
-          <CardTitle>Choose a New Password</CardTitle>
+          <CardTitle className="text-2xl font-bold">{content.title}</CardTitle>
           <CardDescription>
-            Enter a new password for your account below.
+            {content.desc}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label>New Password</Label>
+              <Label className="text-start block">{content.labelPass}</Label>
               <Input
                 type="password"
                 value={password}
@@ -106,7 +151,7 @@ export default function ResetPasswordContent() {
             </div>
 
             <div className="space-y-2">
-              <Label>Confirm New Password</Label>
+              <Label className="text-start block">{content.labelConfirm}</Label>
               <Input
                 type="password"
                 value={confirmPassword}
@@ -115,11 +160,11 @@ export default function ResetPasswordContent() {
               />
             </div>
 
-            {error && <p className="text-red-500">{error}</p>}
-            {success && <p className="text-green-600">{success}</p>}
+            {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+            {success && <p className="text-green-600 text-sm font-medium">{success}</p>}
 
             <Button type="submit" disabled={isSubmitting || !!success} className="w-full">
-              {isSubmitting ? "Resetting..." : "Reset Password"}
+              {isSubmitting ? content.btnResetting : content.btnReset}
             </Button>
           </form>
         </CardContent>

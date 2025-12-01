@@ -1,34 +1,69 @@
 import { NextResponse } from "next/server";
 import { getConnection } from "@/lib/db";
+import sql from "mssql";
 
-// UPDATE Restaurant Info
 export async function PUT(req: Request) {
   try {
-    const { id, name, tagline, logoUrl, phone, address, email } = await req.json();
-    
+    const {
+      id,
+      name,
+      name_ar,
+      tagline,
+      tagline_ar,
+      logoUrl,
+      phone,
+      address,
+      address_ar,
+      email,
+    } = await req.json();
+
     if (!id) {
-        return NextResponse.json({ success: false, message: "Restaurant ID is missing" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Restaurant ID is missing" },
+        { status: 400 }
+      );
     }
 
     const pool = await getConnection();
 
-    await pool.request()
-      .input("id", id)
-      .input("name", name)
-      .input("tagline", tagline)
-      .input("logoUrl", logoUrl)
-      .input("phone", phone)
-      // Ensure we don't pass null to DB if column forbids it, default to empty string
-      .input("address", address || "") 
-      .input("email", email || "")
-      .query(`
+    await pool
+      .request()
+      .input("id", sql.Int, id)
+
+      .input("name", sql.NVarChar, name)
+      .input("tagline", sql.NVarChar, tagline)
+      .input("address", sql.NVarChar, address || "")
+
+      .input("name_ar", sql.NVarChar, name_ar || "")
+      .input("tagline_ar", sql.NVarChar, tagline_ar || "")
+      .input("address_ar", sql.NVarChar, address_ar || "")
+
+      .input("logoUrl", sql.VarChar, logoUrl)
+      .input("phone", sql.VarChar, phone)
+      .input("email", sql.VarChar, email || "").query(`
         UPDATE RestaurantInfo 
-        SET name=@name, tagline=@tagline, logoUrl=@logoUrl, phone=@phone, address=@address, email=@email 
-        WHERE id=@id
+        SET 
+          name = @name, 
+          name_ar = @name_ar,
+          tagline = @tagline, 
+          tagline_ar = @tagline_ar,
+          logoUrl = @logoUrl, 
+          phone = @phone, 
+          address = @address, 
+          address_ar = @address_ar,
+          email = @email 
+        WHERE id = @id
       `);
 
-    return NextResponse.json({ success: true, message: "Restaurant info updated" });
+    return NextResponse.json({
+      success: true,
+      message: "Restaurant info updated",
+    });
   } catch (err: any) {
-    return NextResponse.json({ success: false, message: err.message }, { status: 500 });
+    console.error("API Error:", err);
+    return NextResponse.json(
+      { success: false, message: err.message },
+      { status: 500 }
+    );
   }
 }

@@ -1,5 +1,4 @@
 import AppCardFields from "@/components/ui/AppCardFields";
-
 import { getProducts, getCategories, getRestaurantInfo } from "@/lib/db";
 
 const HomePage = async () => {
@@ -9,8 +8,10 @@ const HomePage = async () => {
   ]);
   const info = await getRestaurantInfo();
 
+  // console.log(info, categories, products,"DATA FROM DB")
+
   return (
-    <div className="grid grid-cols-1  gap-2 pb-8 ">
+    <div className="grid grid-cols-1 gap-2 pb-8">
       <AppCardFields products={products} categories={categories} info={info} />
     </div>
   );

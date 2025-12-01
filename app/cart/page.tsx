@@ -6,19 +6,51 @@ import Image from "next/image";
 import { Trash } from "lucide-react";
 import { useCart } from "@/components/context/CartContext";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/context/LanguageContext"; // 1. Import Language Context
 
 export default function CartPage() {
   const { cart, removeFromCart, updateCartItem } = useCart();
   const router = useRouter();
+
+  const { language } = useLanguage();
+
+  const t = {
+    en: {
+      emptyTitle: "Your Cart is Empty",
+      emptyDesc: "Looks like you haven't added anything yet.",
+      startShopping: "Start Shopping",
+      cartTitle: `Your Cart (${cart.length} items)`,
+      total: "Total:",
+      checkout: "Checkout",
+      currency: "KWD",
+      item: "items",
+    },
+    ar: {
+      emptyTitle: "سلة المشتريات فارغة",
+      emptyDesc: "يبدو أنك لم تضف أي شيء بعد.",
+      startShopping: "ابدأ التسوق",
+      cartTitle: `سلة المشتريات (${cart.length} عناصر)`,
+      total: "الإجمالي:",
+      checkout: "إتمام الطلب",
+      currency: "د.ك",
+      item: "عناصر",
+    },
+  };
+
+  const content = t[language]; 
 
   const totalPrice = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   if (cart.length === 0) {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center text-center text-gray-600 px-4">
-        <h2 className="text-2xl font-bold mb-2 dark:text-gray-100">Your Cart is Empty</h2>
-        <p className="mb-6 dark:text-gray-200">Looks like you haven&apos;t added anything yet.</p>
-        <Button onClick={() => router.push("/")}>Start Shopping</Button>
+        <h2 className="text-2xl font-bold mb-2 dark:text-gray-100">
+          {content.emptyTitle}
+        </h2>
+        <p className="mb-6 dark:text-gray-200">{content.emptyDesc}</p>
+        <Button onClick={() => router.push("/")}>
+          {content.startShopping}
+        </Button>
       </div>
     );
   }
@@ -29,9 +61,7 @@ export default function CartPage() {
 
   return (
     <div className="max-w-4xl mx-auto mt-6 px-4 pb-20">
-      <h2 className="text-2xl font-bold mb-5">
-        Your Cart ({cart.length} items)
-      </h2>
+      <h2 className="text-2xl font-bold mb-5">{content.cartTitle}</h2>
 
       <div className="flex flex-col gap-4">
         {cart.map((item) => (
@@ -52,10 +82,12 @@ export default function CartPage() {
 
               <div className="flex flex-col">
                 <h3 className="text-base sm:text-lg font-semibold line-clamp-2">
-                  {item.Title}
+                  {language === "ar" && (item as any).Title_ar
+                    ? (item as any).Title_ar
+                    : item.Title}
                 </h3>
                 <p className="text-primary font-bold mt-1">
-                  {item.price.toFixed(3)} KWD
+                  {item.price.toFixed(3)} {content.currency}
                 </p>
               </div>
             </div>
@@ -63,7 +95,10 @@ export default function CartPage() {
             {/* Actions (Qty & Delete) */}
             <div className="flex items-center justify-between w-full sm:w-auto sm:gap-6 mt-2 sm:mt-0 border-t sm:border-none pt-3 sm:pt-0">
               {/* Quantity Selector */}
-              <div className="flex items-center border rounded-md bg-background">
+              <div
+                className="flex items-center border rounded-md bg-background"
+                dir="ltr"
+              >
                 <Button
                   variant="ghost"
                   size="sm"
@@ -90,11 +125,12 @@ export default function CartPage() {
               </div>
 
               {/* Delete Button */}
+              {/* Changed ml-auto to ms-auto (margin-start) for RTL support */}
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => removeFromCart(item.id)}
-                className="text-red-500 hover:bg-red-50 hover:text-red-600 ml-auto sm:ml-0"
+                className="text-red-500 hover:bg-red-50 hover:text-red-600 ms-auto sm:ms-0"
               >
                 <Trash className="w-4 h-4" />
               </Button>
@@ -108,10 +144,10 @@ export default function CartPage() {
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-end items-center gap-4">
           <div className="flex justify-between w-full sm:w-auto gap-4 items-center">
             <span className="text-lg text-muted-foreground sm:hidden">
-              Total:
+              {content.total}
             </span>
             <span className="text-xl font-bold text-primary">
-              {totalPrice.toFixed(3)} KWD
+              {totalPrice.toFixed(3)} {content.currency}
             </span>
           </div>
 
@@ -119,7 +155,7 @@ export default function CartPage() {
             className="w-full sm:w-auto rounded-full px-8 py-6 text-lg shadow-md"
             onClick={handleCheckout}
           >
-            Checkout
+            {content.checkout}
           </Button>
         </div>
       </div>

@@ -19,6 +19,21 @@ export default function LanguageSwitcher() {
     setMounted(true);
   }, []);
 
+  // Define translations for the menu labels
+  const t = {
+    en: {
+      englishLabel: "English",
+      arabicLabel: "Arabic",
+    },
+    ar: {
+      englishLabel: "الإنجليزية",
+      arabicLabel: "العربية",
+    },
+  };
+
+  // Get the content based on the current language (fallback to en)
+  const content = t[language as keyof typeof t] || t.en;
+
   if (!mounted) {
     return (
       <Button
@@ -51,7 +66,7 @@ export default function LanguageSwitcher() {
           className="cursor-pointer"
         >
           <div className="flex items-center justify-between w-full min-w-[100px]">
-            <span>English</span>
+            <span>{content.englishLabel}</span>
             {language === "en" && (
               <Check className="h-4 w-4 ms-2 text-green-600" />
             )}
@@ -64,7 +79,7 @@ export default function LanguageSwitcher() {
           className="cursor-pointer font-sans"
         >
           <div className="flex items-center justify-between w-full min-w-[100px]">
-            <span>العربية</span>
+            <span>{content.arabicLabel}</span>
             {language === "ar" && (
               <Check className="h-4 w-4 ms-2 text-green-600" />
             )}

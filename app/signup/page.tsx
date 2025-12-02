@@ -247,7 +247,7 @@ export default function SignUp() {
                 <SelectContent className="max-h-[300px]">
                   {kuwaitLocations.map((gov) => (
                     <SelectGroup key={gov.en}>
-                      <SelectLabel className="bg-gray-200 z-[99] dark:bg-gray-800 sticky top-0">
+                      <SelectLabel className="bg-gray-200 z-[99] dark:bg-gray-800 sticky top-[-6px]">
                         {language === "ar" ? gov.ar : gov.en}
                       </SelectLabel>
                       {gov.areas.map((area) => (

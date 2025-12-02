@@ -18,28 +18,126 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectGroup,
+  SelectLabel,
 } from "@/components/ui/select";
 import { User, Mail } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useLanguage } from "@/context/LanguageContext"; // 1. Import Context
+import { useLanguage } from "@/context/LanguageContext";
+
+const kuwaitLocations = [
+  {
+    en: "Capital (Al Asimah)",
+    ar: "العاصمة",
+    areas: [
+      { en: "Kuwait City", ar: "مدينة الكويت" },
+      { en: "Sharq", ar: "شرق" },
+      { en: "Mirqab", ar: "المرقاب" },
+      { en: "Dasman", ar: "دسمان" },
+      { en: "Qibla", ar: "القبلة" },
+      { en: "Shamiya", ar: "الشامية" },
+      { en: "Rawda", ar: "الروضة" },
+      { en: "Adailiya", ar: "العديلية" },
+      { en: "Khaldiya", ar: "الخالدية" },
+      { en: "Qadsiya", ar: "القادسية" },
+      { en: "Yarmouk", ar: "اليرموك" },
+      { en: "Sulaibikhat", ar: "الصليبيخات" },
+      { en: "Doha", ar: "الدوحة" },
+    ],
+  },
+  {
+    en: "Hawally",
+    ar: "حولي",
+    areas: [
+      { en: "Hawally", ar: "حولي" },
+      { en: "Salmiya", ar: "السالمية" },
+      { en: "Jabriya", ar: "الجابرية" },
+      { en: "Maidan Hawally", ar: "ميدان حولي" },
+      { en: "Bayan", ar: "بيان" },
+      { en: "Mishref", ar: "مشرف" },
+      { en: "Salwa", ar: "سلوى" },
+      { en: "Rumaithiya", ar: "الرميثية" },
+      { en: "Shaab", ar: "الشعب" },
+      { en: "Salam", ar: "السلام" },
+      { en: "Hitteen", ar: "حطين" },
+      { en: "Zahra", ar: "الزهراء" },
+      { en: "Mubarak Al-Abdullah", ar: "مبارك العبدالله" },
+    ],
+  },
+  {
+    en: "Farwaniya",
+    ar: "الفروانية",
+    areas: [
+      { en: "Farwaniya", ar: "الفروانية" },
+      { en: "Khaitan", ar: "خيطان" },
+      { en: "Andalous", ar: "الأندلس" },
+      { en: "Ishbiliya", ar: "اشبيلية" },
+      { en: "Jleeb Al-Shuyoukh", ar: "جليب الشيوخ" },
+      { en: "Omariya", ar: "العمرية" },
+      { en: "Rabiya", ar: "الرابية" },
+      { en: "Riggae", ar: "الرقعي" },
+      { en: "Sabah Al-Nasser", ar: "صباح الناصر" },
+      { en: "Firdous", ar: "الفردوس" },
+    ],
+  },
+  {
+    en: "Mubarak Al-Kabeer",
+    ar: "مبارك الكبير",
+    areas: [
+      { en: "Mubarak Al-Kabeer", ar: "مبارك الكبير" },
+      { en: "Adan", ar: "العدان" },
+      { en: "Qurain", ar: "القرين" },
+      { en: "Qusour", ar: "القصور" },
+      { en: "Sabah Al-Salem", ar: "صباح السالم" },
+      { en: "Messila", ar: "المسيلة" },
+      { en: "Abu Al Hasaniya", ar: "أبو الحصانية" },
+    ],
+  },
+  {
+    en: "Ahmadi",
+    ar: "الأحمدي",
+    areas: [
+      { en: "Ahmadi", ar: "الأحمدي" },
+      { en: "Fahaheel", ar: "الفحيحيل" },
+      { en: "Mangaf", ar: "المنقف" },
+      { en: "Sabahiya", ar: "الصباحية" },
+      { en: "Egaila", ar: "العقيلة" },
+      { en: "Riqqa", ar: "الرقة" },
+      { en: "Mahboula", ar: "المهبولة" },
+      { en: "Abu Halifa", ar: "أبو حليفة" },
+      { en: "Khiran", ar: "الخيران" },
+      { en: "Wafra", ar: "الوفرة" },
+      { en: "Sabah Al-Ahmad", ar: "مدينة صباح الأحمد" },
+    ],
+  },
+  {
+    en: "Jahra",
+    ar: "الجهراء",
+    areas: [
+      { en: "Jahra", ar: "الجهراء" },
+      { en: "Sulaibiya", ar: "الصليبية" },
+      { en: "Saad Al-Abdullah", ar: "سعد العبدالله" },
+      { en: "Mutlaa", ar: "المطلاع" },
+      { en: "Qairawan", ar: "القيروان" },
+      { en: "Abdali", ar: "العبدلي" },
+    ],
+  },
+];
 
 export default function SignUp() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // 2. Get Language
+
   const { language } = useLanguage();
 
-  // 3. Define Translations
   const t = {
     en: {
       title: "Create an Account",
       desc: "Fill the form to sign up",
-      country: "Country",
-      countryPlace: "Select Country",
-      kuwait: "Kuwait",
+      area: "Area / Region",
+      areaPlace: "Select your area",
       mobile: "Mobile Number",
       mobilePlace: "Enter Your Mobile Number",
       name: "Name",
@@ -53,14 +151,13 @@ export default function SignUp() {
       termsText: "By registering you agree to our",
       termsLink: "Terms & Conditions",
       success: "Account created successfully!",
-      errorGeneric: "Something went wrong ❌"
+      errorGeneric: "Something went wrong ❌",
     },
     ar: {
       title: "إنشاء حساب جديد",
       desc: "يرجى ملء النموذج للتسجيل",
-      country: "الدولة",
-      countryPlace: "اختر الدولة",
-      kuwait: "الكويت",
+      area: "المنطقة",
+      areaPlace: "اختر منطقتك",
       mobile: "رقم الهاتف",
       mobilePlace: "أدخل رقم الهاتف",
       name: "الاسم",
@@ -74,14 +171,14 @@ export default function SignUp() {
       termsText: "بالتسجيل أنت توافق على",
       termsLink: "الشروط والأحكام",
       success: "تم إنشاء الحساب بنجاح!",
-      errorGeneric: "حدث خطأ ما ❌"
-    }
+      errorGeneric: "حدث خطأ ما ❌",
+    },
   };
 
-  const content = t[language];
+  const content = t[language as keyof typeof t];
 
   const [form, setForm] = useState({
-    country: "Kuwait",
+    area: "",
     mobile: "",
     name: "",
     email: "",
@@ -111,15 +208,14 @@ export default function SignUp() {
           email: "",
           password: "",
           mobile: "",
-          country: "Kuwait",
+          area: "",
         });
         router.push("/login");
       } else {
         toast.error(data.message || content.errorGeneric);
       }
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : content.errorGeneric;
+      const message = err instanceof Error ? err.message : content.errorGeneric;
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -130,39 +226,51 @@ export default function SignUp() {
     <div className="min-h-[calc(100vh-140px)] flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a] px-4">
       <Card className="w-full max-w-lg shadow-lg rounded-2xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">
-            {content.title}
-          </CardTitle>
+          <CardTitle className="text-2xl font-bold">{content.title}</CardTitle>
           <CardDescription>{content.desc}</CardDescription>
         </CardHeader>
 
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            {/* Country */}
+            {/* AREA SELECTION */}
             <div>
-              <Label htmlFor="country" className="block text-start">{content.country}</Label>
+              <Label htmlFor="area" className="block text-start">
+                {content.area}
+              </Label>
               <Select
-                value={form.country}
-                onValueChange={(value) => setForm({ ...form, country: value })}
+                value={form.area}
+                onValueChange={(value) => setForm({ ...form, area: value })}
               >
                 <SelectTrigger className="mt-2 text-start">
-                  <SelectValue placeholder={content.countryPlace} />
+                  <SelectValue placeholder={content.areaPlace} />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Kuwait">{content.kuwait}</SelectItem>
+                <SelectContent className="max-h-[300px]">
+                  {kuwaitLocations.map((gov) => (
+                    <SelectGroup key={gov.en}>
+                      <SelectLabel className="bg-gray-200 z-[99] dark:bg-gray-800 sticky top-0">
+                        {language === "ar" ? gov.ar : gov.en}
+                      </SelectLabel>
+                      {gov.areas.map((area) => (
+                        <SelectItem
+                          key={area.en}
+                          value={area.en}
+                          className="cursor-pointer"
+                        >
+                          {language === "ar" ? area.ar : area.en}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             {/* Mobile Number */}
             <div>
-              <Label htmlFor="mobile" className="block text-start">{content.mobile}</Label>
+              <Label htmlFor="mobile" className="block text-start">
+                {content.mobile}
+              </Label>
               <div className="flex mt-2" dir="ltr">
-                 {/* 
-                   We force 'ltr' here because phone numbers are technically LTR even in Arabic.
-                   However, if you want the "+965" box on the Right in Arabic, remove dir="ltr".
-                   Standard UX usually keeps numbers LTR.
-                 */}
                 <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-100 text-gray-600 text-sm">
                   +965
                 </span>
@@ -180,11 +288,11 @@ export default function SignUp() {
 
             {/* Name */}
             <div>
-              <Label htmlFor="name" className="block text-start">{content.name}</Label>
+              <Label htmlFor="name" className="block text-start">
+                {content.name}
+              </Label>
               <div className="relative mt-2">
-                {/* 'start-3' moves icon to Left in EN and Right in AR */}
                 <User className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
-                {/* 'ps-9' adds padding to Start (Left in EN, Right in AR) */}
                 <Input
                   id="name"
                   name="name"
@@ -200,7 +308,9 @@ export default function SignUp() {
 
             {/* Email */}
             <div>
-              <Label htmlFor="email" className="block text-start">{content.email}</Label>
+              <Label htmlFor="email" className="block text-start">
+                {content.email}
+              </Label>
               <div className="relative mt-2">
                 <Mail className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -208,7 +318,7 @@ export default function SignUp() {
                   name="email"
                   type="email"
                   placeholder={content.emailPlace}
-                  className="ps-9" 
+                  className="ps-9"
                   value={form.email}
                   onChange={handleChange}
                   required
@@ -218,7 +328,9 @@ export default function SignUp() {
 
             {/* Password */}
             <div>
-              <Label htmlFor="password" className="block text-start">{content.password}</Label>
+              <Label htmlFor="password" className="block text-start">
+                {content.password}
+              </Label>
               <Input
                 id="password"
                 name="password"

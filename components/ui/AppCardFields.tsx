@@ -81,16 +81,16 @@ export default function AppCardFields({
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-2 md:px-4 pb-24 mt-6">
+    <div className="w-full max-w-7xl mx-auto px-1 md:px-4 pb-24 mt-6">
       {/* --- Search Input Section --- */}
       <div className="sticky top-2 z-30 mb-6 mt-2 px-1">
-        <div className="relative shadow-md rounded-full group">
+        <div className="relative rounded-full group">
           <div className="absolute inset-y-0 start-0 flex items-center ps-4 pointer-events-none">
             <Search className="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
           </div>
           <Input
             placeholder={content.searchPlaceholder}
-            className="block w-full p-4 ps-11 text-sm rounded-full border-border/50 bg-background/95 backdrop-blur-md ring-1 ring-black/5 dark:ring-white/10 focus-visible:ring-1 outline-none focus-visible:ring-primary shadow-sm h-12 transition-all"
+            className="block w-full p-4 ps-11 text-sm rounded-full border-border/50 bg-background/95  focus-visible:ring-1 outline-none h-12 transition-all"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />

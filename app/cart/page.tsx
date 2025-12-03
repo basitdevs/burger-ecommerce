@@ -60,7 +60,7 @@ export default function CartPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-6 px-4 pb-20">
+    <div className="max-w-4xl mx-auto mt-6 px-4 pb-36 md:pb-20">
       <h2 className="text-2xl font-bold mb-5">{content.cartTitle}</h2>
 
       <div className="flex flex-col gap-4">

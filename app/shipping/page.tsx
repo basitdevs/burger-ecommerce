@@ -247,8 +247,8 @@ export default function ShippingPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-140px)] flex items-center justify-center bg-gray-50 dark:bg-transparent p-4">
-      <Card className="w-full max-w-2xl shadow-lg rounded-2xl">
+    <div className="min-h-[calc(100vh-140px)] flex items-center justify-center bg-gray-50 dark:bg-transparent px-2 py-4 md:p-4">
+      <Card className="w-full max-w-2xl shadow-md rounded-xl md:rounded-2xl">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">{content.title}</CardTitle>
           <CardDescription>{content.desc}</CardDescription>

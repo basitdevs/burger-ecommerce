@@ -55,7 +55,8 @@ export default function ForgotPasswordPage() {
       errorTitle: "فشل في معالجة الطلب ❌",
       errorGeneric: "حدث خطأ ما. يرجى المحاولة مرة أخرى لاحقاً.",
       successBodyPre: "لقد قمنا بإرسال رابط إعادة التعيين إلى",
-      successBodyPost: "يرجى التحقق من البريد الوارد والرسائل غير المرغوب فيها.",
+      successBodyPost:
+        "يرجى التحقق من البريد الوارد والرسائل غير المرغوب فيها.",
       tryAnother: "جرب بريد إلكتروني آخر",
       backToLogin: "العودة لتسجيل الدخول",
     },
@@ -93,19 +94,17 @@ export default function ForgotPasswordPage() {
     <div className="min-h-[calc(100vh-140px)] flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a] p-4">
       <Card className="w-full max-w-md shadow-lg rounded-2xl">
         <CardHeader className="text-center relative">
-          {/* 
-            'start-0' automatically handles LTR (Left) and RTL (Right).
-            We rotate the icon in Arabic so the arrow points correctly for 'Back'.
-          */}
           <Link
             href="/login"
-            className="absolute start-0 top-0 p-6 text-gray-500 hover:text-primary"
+            className="absolute start-0 top-0 p-6 pt-2 text-gray-500  hover:text-primary"
           >
-            <ArrowLeft className={`w-5 h-5 ${language === 'ar' ? 'rotate-180' : ''}`} />
+            <ArrowLeft
+              className={`w-5 h-5 mb-2 ${language === "ar" ? "rotate-180" : ""}`}
+            />
           </Link>
-          
+
           <CardTitle className="text-2xl font-bold">{content.title}</CardTitle>
-          <CardDescription>
+          <CardDescription className="mt-4">
             {submitted ? content.descSent : content.descNormal}
           </CardDescription>
         </CardHeader>
@@ -136,7 +135,7 @@ export default function ForgotPasswordPage() {
         ) : (
           <CardContent className="text-center py-6">
             <div className="mb-4 text-green-600 bg-green-50 p-4 rounded-lg text-sm">
-              {content.successBodyPre} <strong>{email}</strong>. <br/>
+              {content.successBodyPre} <strong>{email}</strong>. <br />
               {content.successBodyPost}
             </div>
             <Button

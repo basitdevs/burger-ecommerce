@@ -23,16 +23,14 @@ import { User, Mail } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useLanguage } from "@/context/LanguageContext"; // 1. Import Context
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function SignUp() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // 2. Get Language
+
   const { language } = useLanguage();
 
-  // 3. Define Translations
   const t = {
     en: {
       title: "Create an Account",
@@ -53,7 +51,7 @@ export default function SignUp() {
       termsText: "By registering you agree to our",
       termsLink: "Terms & Conditions",
       success: "Account created successfully!",
-      errorGeneric: "Something went wrong ❌"
+      errorGeneric: "Something went wrong ❌",
     },
     ar: {
       title: "إنشاء حساب جديد",
@@ -74,8 +72,8 @@ export default function SignUp() {
       termsText: "بالتسجيل أنت توافق على",
       termsLink: "الشروط والأحكام",
       success: "تم إنشاء الحساب بنجاح!",
-      errorGeneric: "حدث خطأ ما ❌"
-    }
+      errorGeneric: "حدث خطأ ما ❌",
+    },
   };
 
   const content = t[language];
@@ -118,8 +116,7 @@ export default function SignUp() {
         toast.error(data.message || content.errorGeneric);
       }
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : content.errorGeneric;
+      const message = err instanceof Error ? err.message : content.errorGeneric;
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -127,12 +124,10 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-140px)] flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a] px-4">
+    <div className="min-h-[calc(100vh-140px)] flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a] px-2 md:px-4 py-8">
       <Card className="w-full max-w-lg shadow-lg rounded-2xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">
-            {content.title}
-          </CardTitle>
+          <CardTitle className="text-2xl font-bold">{content.title}</CardTitle>
           <CardDescription>{content.desc}</CardDescription>
         </CardHeader>
 
@@ -140,7 +135,9 @@ export default function SignUp() {
           <CardContent className="space-y-4">
             {/* Country */}
             <div>
-              <Label htmlFor="country" className="block text-start">{content.country}</Label>
+              <Label htmlFor="country" className="block text-start">
+                {content.country}
+              </Label>
               <Select
                 value={form.country}
                 onValueChange={(value) => setForm({ ...form, country: value })}
@@ -154,15 +151,11 @@ export default function SignUp() {
               </Select>
             </div>
 
-            {/* Mobile Number */}
             <div>
-              <Label htmlFor="mobile" className="block text-start">{content.mobile}</Label>
+              <Label htmlFor="mobile" className="block text-start">
+                {content.mobile}
+              </Label>
               <div className="flex mt-2" dir="ltr">
-                 {/* 
-                   We force 'ltr' here because phone numbers are technically LTR even in Arabic.
-                   However, if you want the "+965" box on the Right in Arabic, remove dir="ltr".
-                   Standard UX usually keeps numbers LTR.
-                 */}
                 <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-100 text-gray-600 text-sm">
                   +965
                 </span>
@@ -180,11 +173,11 @@ export default function SignUp() {
 
             {/* Name */}
             <div>
-              <Label htmlFor="name" className="block text-start">{content.name}</Label>
+              <Label htmlFor="name" className="block text-start">
+                {content.name}
+              </Label>
               <div className="relative mt-2">
-                {/* 'start-3' moves icon to Left in EN and Right in AR */}
                 <User className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
-                {/* 'ps-9' adds padding to Start (Left in EN, Right in AR) */}
                 <Input
                   id="name"
                   name="name"
@@ -200,7 +193,9 @@ export default function SignUp() {
 
             {/* Email */}
             <div>
-              <Label htmlFor="email" className="block text-start">{content.email}</Label>
+              <Label htmlFor="email" className="block text-start">
+                {content.email}
+              </Label>
               <div className="relative mt-2">
                 <Mail className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -208,7 +203,7 @@ export default function SignUp() {
                   name="email"
                   type="email"
                   placeholder={content.emailPlace}
-                  className="ps-9" 
+                  className="ps-9"
                   value={form.email}
                   onChange={handleChange}
                   required
@@ -218,7 +213,9 @@ export default function SignUp() {
 
             {/* Password */}
             <div>
-              <Label htmlFor="password" className="block text-start">{content.password}</Label>
+              <Label htmlFor="password" className="block text-start">
+                {content.password}
+              </Label>
               <Input
                 id="password"
                 name="password"

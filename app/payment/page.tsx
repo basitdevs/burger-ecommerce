@@ -105,7 +105,7 @@ export default function PaymentPage() {
     };
 
     return (
-        <div className="min-h-[calc(100vh-140px)] flex items-center justify-center bg-gray-50 dark:bg-transparent p-4">
+        <div className="min-h-[calc(100vh-76px)] flex items-center justify-center bg-gray-50 dark:bg-transparent p-4">
             <Card className="w-full max-w-lg shadow-lg rounded-2xl">
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold">{content.title}</CardTitle>

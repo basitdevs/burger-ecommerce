@@ -124,7 +124,7 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-140px)] flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a] px-2 md:px-4 py-8">
+    <div className="min-h-[calc(100vh-76px)] flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a] px-2 md:px-4 py-8">
       <Card className="w-full max-w-lg shadow-lg rounded-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">{content.title}</CardTitle>

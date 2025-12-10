@@ -7,12 +7,16 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { useCart } from "@/components/context/CartContext";
 import { useAuth } from "@/components/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext"; // 1. Import Language Context
 
 function StatusContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { cart, clearCart } = useCart();
   const { user } = useAuth();
+  
+  // 2. Get Language
+  const { language } = useLanguage();
 
   const paymentId = searchParams.get("paymentId");
   const [status, setStatus] = useState<"loading" | "success" | "failed">(
@@ -20,24 +24,50 @@ function StatusContent() {
   );
   const [isProcessed, setIsProcessed] = useState(false);
 
+  // 3. Translation Dictionary
+  const t = {
+    en: {
+      loadingTitle: "Finalizing Order...",
+      loadingDesc: "Please wait while we confirm payment and save your order details.",
+      
+      successTitle: "Order Saved Successfully!",
+      successDesc: "Thank you! We have received your payment and your order is now being processed.",
+      
+      failedTitle: "Payment Failed",
+      failedDesc: "We could not verify your payment. No order has been saved.",
+      
+      homeBtn: "Return to Home",
+      retryBtn: "Try Again"
+    },
+    ar: {
+      loadingTitle: "جاري إتمام الطلب...",
+      loadingDesc: "يرجى الانتظار بينما نقوم بتأكيد الدفع وحفظ تفاصيل الطلب.",
+      
+      successTitle: "تم حفظ الطلب بنجاح!",
+      successDesc: "شكراً لك! تم استلام دفعتك وجاري تجهيز طلبك الآن.",
+      
+      failedTitle: "فشلت عملية الدفع",
+      failedDesc: "لم نتمكن من التحقق من الدفع. لم يتم حفظ الطلب.",
+      
+      homeBtn: "العودة للرئيسية",
+      retryBtn: "حاول مرة أخرى"
+    }
+  };
+
+  const content = t[language];
+
   useEffect(() => {
     if (!paymentId || isProcessed) return;
 
     const verifyAndSave = async () => {
       setIsProcessed(true);
 
-      // 1. RETRIEVE SHIPPING DATA
-      // This retrieves the exact JSON object you saved in ShippingPage
       const storedAddress = sessionStorage.getItem("shippingAddress");
       const shippingAddress = storedAddress ? JSON.parse(storedAddress) : null;
 
-      // 2. CHECK IF DATA EXISTS
-      // If user did Pickup, address might be null, which is fine.
-      // If Delivery, address will have {area, block, street...}
-
       const orderPayload = {
         cartItems: cart,
-        shippingAddress: shippingAddress, // Sends the full object with Area/Block etc
+        shippingAddress: shippingAddress,
         customer: {
           name: user?.name || shippingAddress?.name || "Guest",
           email: user?.email || shippingAddress?.email || "guest@example.com",
@@ -46,7 +76,6 @@ function StatusContent() {
       };
 
       try {
-        // 3. CALL VERIFY API
         const res = await fetch("/api/payment/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -61,7 +90,7 @@ function StatusContent() {
         if (data.isSuccess) {
           setStatus("success");
           clearCart();
-          sessionStorage.removeItem("shippingAddress"); // Clean up
+          sessionStorage.removeItem("shippingAddress");
         } else {
           setStatus("failed");
         }
@@ -80,8 +109,8 @@ function StatusContent() {
   }, [paymentId]);
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center p-4 bg-gray-50">
-      <Card className="w-full max-w-md text-center shadow-lg border-0 bg-white/50 backdrop-blur-sm">
+    <div className="min-h-[80vh] flex items-center justify-center p-4 bg-gray-50 dark:bg-transparent">
+      <Card className="w-full max-w-md text-center shadow-lg border-0 bg-white/80 dark:bg-card backdrop-blur-sm">
         <CardHeader>
           <div className="flex justify-center mb-4">
             {status === "loading" && (
@@ -95,19 +124,16 @@ function StatusContent() {
             )}
           </div>
           <CardTitle className="text-3xl">
-            {status === "loading" && "Finalizing Order..."}
-            {status === "success" && "Order Saved Successfully!"}
-            {status === "failed" && "Payment Failed"}
+            {status === "loading" && content.loadingTitle}
+            {status === "success" && content.successTitle}
+            {status === "failed" && content.failedTitle}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <p className="text-lg text-gray-600">
-            {status === "loading" &&
-              "Please wait while we confirm payment and save your order details."}
-            {status === "success" &&
-              "Thank you! We have received your payment and your order is now being processed."}
-            {status === "failed" &&
-              "We could not verify your payment. No order has been saved."}
+          <p className="text-lg text-gray-600 dark:text-gray-300">
+            {status === "loading" && content.loadingDesc}
+            {status === "success" && content.successDesc}
+            {status === "failed" && content.failedDesc}
           </p>
 
           {status !== "loading" && (
@@ -117,7 +143,7 @@ function StatusContent() {
                 router.push(status === "success" ? "/" : "/payment")
               }
             >
-              {status === "success" ? "Return to Home" : "Try Again"}
+              {status === "success" ? content.homeBtn : content.retryBtn}
             </Button>
           )}
         </CardContent>

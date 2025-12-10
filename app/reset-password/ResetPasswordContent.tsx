@@ -130,7 +130,7 @@ export default function ResetPasswordContent() {
 
   // Main Form View
   return (
-    <div className="flex justify-center items-center min-h-[calc(100vh-140px)] bg-gray-50 dark:bg-[#0a0a0a] p-4">
+    <div className="flex justify-center items-center min-h-[calc(100vh-76px)] bg-gray-50 dark:bg-[#0a0a0a] p-4">
       <Card className="w-full max-w-md shadow-lg rounded-2xl">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">{content.title}</CardTitle>

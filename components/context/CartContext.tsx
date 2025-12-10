@@ -4,87 +4,92 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 export interface CartItem {
-    id: number;
-    Title: string;
-    price: number;
-    image: string;
-    qty: number;
+  id: number;
+  Title: string;
+  price: number;
+  image: string;
+  qty: number;
 }
 
 interface CartContextType {
-    cart: CartItem[];
-    cartQty: number;
-    addToCart: (item: CartItem) => void;
-    removeFromCart: (id: number) => void;
-    updateCartItem: (id: number, qty: number) => void;
+  cart: CartItem[];
+  cartQty: number;
+  addToCart: (item: CartItem) => void;
+  removeFromCart: (id: number) => void;
+  updateCartItem: (id: number, qty: number) => void;
+  clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | null>(null);
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-    const [cart, setCart] = useState<CartItem[]>([]);
-    const [isMounted, setIsMounted] = useState(false);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
 
-    // Load cart from localStorage ONLY on mount
-    useEffect(() => {
-        setIsMounted(true);
-        if (typeof window !== "undefined") {
-            const saved = localStorage.getItem("cart");
-            if (saved) {
-                try {
-                    setCart(JSON.parse(saved));
-                } catch (e) {
-                    console.error("Failed to parse cart from local storage", e);
-                }
-            }
+  // Load cart from localStorage ONLY on mount
+  useEffect(() => {
+    setIsMounted(true);
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("cart");
+      if (saved) {
+        try {
+          setCart(JSON.parse(saved));
+        } catch (e) {
+          console.error("Failed to parse cart from local storage", e);
         }
-    }, []);
+      }
+    }
+  }, []);
 
-    // Update localStorage whenever cart changes
-    useEffect(() => {
-        if (isMounted && typeof window !== "undefined") {
-            localStorage.setItem("cart", JSON.stringify(cart));
-        }
-    }, [cart, isMounted]);
+  // Update localStorage whenever cart changes
+  useEffect(() => {
+    if (isMounted && typeof window !== "undefined") {
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+  }, [cart, isMounted]);
 
-    const addToCart = (item: CartItem) => {
-        setCart((prev) => {
-            const exists = prev.find((p) => p.id === item.id);
-            if (exists) {
-                return prev.map((p) =>
-                    p.id === item.id ? { ...p, qty: p.qty + 1 } : p
-                );
-            }
-            return [...prev, { ...item, qty: 1 }];
-        });
-    };
-
-    const removeFromCart = (id: number) => {
-        setCart((prev) => prev.filter((item) => item.id !== id));
-    };
-
-    const updateCartItem = (id: number, qty: number) => {
-        setCart((prev) =>
-            prev.map((item) => (item.id === id ? { ...item, qty } : item))
+  const addToCart = (item: CartItem) => {
+    setCart((prev) => {
+      const exists = prev.find((p) => p.id === item.id);
+      if (exists) {
+        return prev.map((p) =>
+          p.id === item.id ? { ...p, qty: p.qty + 1 } : p
         );
-    };
+      }
+      return [...prev, { ...item, qty: 1 }];
+    });
+  };
 
-    // Calculate qty, but return 0 if not mounted to prevent hydration mismatch
-    const cartQty = isMounted ? cart.reduce((sum, item) => sum + item.qty, 0) : 0;
+  const removeFromCart = (id: number) => {
+    setCart((prev) => prev.filter((item) => item.id !== id));
+  };
 
-    return (
-        <CartContext.Provider
-            value={{ cart, cartQty, addToCart, removeFromCart, updateCartItem }}
-        >
-            {children}
-        </CartContext.Provider>
+  const updateCartItem = (id: number, qty: number) => {
+    setCart((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, qty } : item))
     );
+  };
+
+  const clearCart = () => {
+    setCart([]);
+    localStorage.removeItem("cart");
+  };
+  // Calculate qty, but return 0 if not mounted to prevent hydration mismatch
+  const cartQty = isMounted ? cart.reduce((sum, item) => sum + item.qty, 0) : 0;
+
+  return (
+    <CartContext.Provider
+      value={{ cart, cartQty, addToCart, removeFromCart, updateCartItem,clearCart }}
+    >
+      {children}
+    </CartContext.Provider>
+  );
 };
 
 export const useCart = () => {
-    const context = useContext(CartContext);
-    if (!context) {
-        throw new Error("useCart must be used within a CartProvider");
-    }
-    return context;
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error("useCart must be used within a CartProvider");
+  }
+  return context;
 };

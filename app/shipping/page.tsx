@@ -226,7 +226,6 @@ export default function ShippingPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Added Check for Area
     if (
       !form.name ||
       !form.phone ||
@@ -240,9 +239,14 @@ export default function ShippingPage() {
       return;
     }
 
-    console.log("Shipping Details Submitted:", form);
-    toast.success(content.successMsg);
+    // 1. Save data to Session Storage to pass it to the Payment Page
+    // We use sessionStorage so it clears when the tab closes
+    sessionStorage.setItem("shippingAddress", JSON.stringify(form));
 
+    // 2. Set the fulfillment type to delivery
+    sessionStorage.setItem("orderType", "delivery");
+
+    toast.success(content.successMsg);
     router.push("/payment");
   };
 

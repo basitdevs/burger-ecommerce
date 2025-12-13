@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import axios from "axios";
 import { createOrder } from "@/lib/db";
 
 export async function POST(request: Request) {
@@ -13,44 +12,47 @@ export async function POST(request: Request) {
       });
     }
 
-    // 1. Verify with MyFatoorah
-    const response = await axios.get(
-      `${process.env.MYFATOORAH_BASE_URL}/v3/payments/${paymentId}`,
+    const myFatoorahPayload = {
+      Key: paymentId,
+      KeyType: "PaymentId",
+    };
+
+    const res = await fetch(
+      "https://apitest.myfatoorah.com/v2/GetPaymentStatus",
       {
+        method: "POST",
         headers: {
-          Authorization: process.env.MYFATOORAH_API_TOKEN,
           "Content-Type": "application/json",
+          Authorization: process.env.MYFATOORAH_API_TOKEN || "",
         },
+        body: JSON.stringify(myFatoorahPayload),
       }
     );
 
-    const data = response.data;
+    const data = await res.json();
 
-    console.log(">> MyFatoorah Verification Response:", data);
-
-    if (data.IsSuccess && data.Data.Invoice.Status == "PAID") {
+    if (data.IsSuccess && data.Data.InvoiceStatus === "Paid") {
       const transaction = data.Data;
-      console.log(">> Payment Verified:", transaction);
-      // 2. SAVE TO SQL DB
-      // 'orderData.shippingAddress' contains the full form object (Area, Block, etc.)
 
       await createOrder({
-        paymentId: transaction.Invoice.Id, // Invoice ID
-        totalAmount: transaction.Amount.ValueInPayCurrency, // Final paid amount
-        customerName: transaction.Customer.Name, // Customer name
-        customerEmail: transaction.Customer.Email, // Customer email
-        customerPhone: transaction.Customer.Mobile, // Customer phone
-        address: orderData.shippingAddress, // Your stored address
+        paymentId: `${transaction.InvoiceId}`,
+        totalAmount: transaction.InvoiceValue,
+        customerName: transaction.CustomerName,
+        customerEmail: transaction.CustomerEmail,
+        customerPhone: transaction.CustomerMobile,
+        address: orderData.shippingAddress,
         items: orderData.cartItems,
       });
 
-      console.log(`>> SUCCESS: Invoice ${transaction.Invoice.Id} saved to DB.`);
       return NextResponse.json({ isSuccess: true, data: transaction });
     } else {
       return NextResponse.json({ isSuccess: false, status: "Unpaid" });
     }
   } catch (error: any) {
-    console.error("Verify API Error:", error?.response?.data || error.message);
-    return NextResponse.json({ isSuccess: false }, { status: 500 });
+    console.error("Verify API Error:", error);
+    return NextResponse.json(
+      { isSuccess: false, message: "Server Error" },
+      { status: 500 }
+    );
   }
 }

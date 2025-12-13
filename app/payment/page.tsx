@@ -1,7 +1,7 @@
 "use client";
 
 import { useCart } from "@/components/context/CartContext";
-import { useAuth } from "@/components/context/AuthContext"; // Import Auth
+import { useAuth } from "@/components/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,7 +16,7 @@ import Image from "next/image";
 import { useLanguage } from "@/context/LanguageContext";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner"; // Assuming you use sonner for toasts
+import { toast } from "sonner";
 
 export default function PaymentPage() {
   const { cart } = useCart();
@@ -24,11 +24,9 @@ export default function PaymentPage() {
   const { language } = useLanguage();
   const [loading, setLoading] = useState(false);
 
-  // State to hold shipping info
   const [shippingInfo, setShippingInfo] = useState<any>(null);
   const [orderType, setOrderType] = useState<string>("pickup");
 
-  // Load Shipping Info on Mount
   useEffect(() => {
     const storedAddress = sessionStorage.getItem("shippingAddress");
     const storedType = sessionStorage.getItem("orderType");
@@ -48,7 +46,6 @@ export default function PaymentPage() {
       qty: "Quantity",
       total: "Total Price",
       payBtn: "Proceed to Payment",
-      alert: "Initiating payment...",
       currency: "KWD",
       deliveryTo: "Delivering to:",
       pickupAt: "Pickup Order",
@@ -59,7 +56,6 @@ export default function PaymentPage() {
       qty: "الكمية",
       total: "إجمالي المبلغ",
       payBtn: "متابعة الدفع",
-      alert: "جاري بدء عملية الدفع...",
       currency: "د.ك",
       deliveryTo: "التوصيل إلى:",
       pickupAt: "استلام من الفرع",
@@ -72,42 +68,48 @@ export default function PaymentPage() {
   const handlePayment = async () => {
     setLoading(true);
 
-    // Prepare Customer Data
-    // Priority: Shipping Info > Logged In User > Guest Defaults
-    const customerData = {
-      name: shippingInfo?.name || user?.name || "Guest",
-      email: shippingInfo?.email || user?.email || "guest@example.com",
-      mobile: shippingInfo?.phone || "12345678", // MyFatoorah needs a mobile
+    const customerName = shippingInfo?.name || user?.name || "Guest";
+    const customerEmail =
+      shippingInfo?.email || user?.email || "guest@example.com";
+
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+
+    const payload = {
+      CustomerName: customerName,
+      CustomerEmail: customerEmail,
+      InvoiceValue: totalPrice,
+      DisplayCurrencyIso: "KWD",
+      NotificationOption: "LNK",
+      CallBackUrl: `${origin}/payment/status`,
+      ErrorUrl: `${origin}/payment/status`,
+      Language: language === "ar" ? "ar" : "en",
+      CustomerReference: orderType,
     };
 
     try {
       const response = await fetch("/api/payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: totalPrice,
-          currency: "KWD",
-          language: language,
-          cartItems: cart,
-          customer: customerData,
-          shippingAddress: shippingInfo, // Pass the full address
-          orderType: orderType, // 'delivery' or 'pickup'
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
 
-      console.log(">> Payment Init Response:", data);
+      if (data.IsSuccess && data.Data && data.Data.InvoiceURL) {
+        toast.success("Redirecting to payment gateway...");
 
-      if (data.url) {
-        window.location.href = data.url;
+        window.location.href = data.Data.InvoiceURL;
       } else {
-        toast.error("Payment initiation failed");
-        console.error("API Error:", data);
+        const errorMessage = data.ValidationErrors
+          ? data.ValidationErrors.map((e: any) => e.Error).join(", ")
+          : data.Message || "Payment initiation failed";
+
+        toast.error(errorMessage);
+        console.error("Payment Error:", data);
       }
     } catch (error) {
       console.error("Frontend Error:", error);
-      toast.error("Something went wrong");
+      toast.error("Something went wrong connecting to the server");
     } finally {
       setLoading(false);
     }
@@ -177,7 +179,8 @@ export default function PaymentPage() {
             onClick={handlePayment}
             disabled={loading || cart.length === 0}
           >
-            {loading ? <Loader2 className="animate-spin" /> : content.payBtn}
+            {loading ? <Loader2 className="animate-spin mr-2" /> : null}
+            {loading ? "Processing..." : content.payBtn}
           </Button>
         </CardFooter>
       </Card>

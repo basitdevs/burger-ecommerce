@@ -1,67 +1,66 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { useCart } from "@/components/context/CartContext";
 import { useAuth } from "@/components/context/AuthContext";
-import { useLanguage } from "@/context/LanguageContext"; // 1. Import Language Context
+import { useLanguage } from "@/context/LanguageContext";
 
 function StatusContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { cart, clearCart } = useCart();
   const { user } = useAuth();
-  
-  // 2. Get Language
   const { language } = useLanguage();
 
   const paymentId = searchParams.get("paymentId");
+
   const [status, setStatus] = useState<"loading" | "success" | "failed">(
     "loading"
   );
-  const [isProcessed, setIsProcessed] = useState(false);
 
-  // 3. Translation Dictionary
+  const isProcessed = useRef(false);
+
   const t = {
     en: {
       loadingTitle: "Finalizing Order...",
-      loadingDesc: "Please wait while we confirm payment and save your order details.",
-      
+      loadingDesc:
+        "Please wait while we confirm payment and save your order details.",
       successTitle: "Order Saved Successfully!",
-      successDesc: "Thank you! We have received your payment and your order is now being processed.",
-      
+      successDesc:
+        "Thank you! We have received your payment and your order is now being processed.",
       failedTitle: "Payment Failed",
       failedDesc: "We could not verify your payment. No order has been saved.",
-      
       homeBtn: "Return to Home",
-      retryBtn: "Try Again"
+      retryBtn: "Try Again",
     },
     ar: {
       loadingTitle: "جاري إتمام الطلب...",
       loadingDesc: "يرجى الانتظار بينما نقوم بتأكيد الدفع وحفظ تفاصيل الطلب.",
-      
       successTitle: "تم حفظ الطلب بنجاح!",
       successDesc: "شكراً لك! تم استلام دفعتك وجاري تجهيز طلبك الآن.",
-      
       failedTitle: "فشلت عملية الدفع",
       failedDesc: "لم نتمكن من التحقق من الدفع. لم يتم حفظ الطلب.",
-      
       homeBtn: "العودة للرئيسية",
-      retryBtn: "حاول مرة أخرى"
-    }
+      retryBtn: "حاول مرة أخرى",
+    },
   };
 
   const content = t[language];
 
   useEffect(() => {
-    if (!paymentId || isProcessed) return;
+    if (!paymentId) {
+      if (!isProcessed.current) setStatus("failed");
+      return;
+    }
+
+    if (isProcessed.current) return;
+    isProcessed.current = true;
 
     const verifyAndSave = async () => {
-      setIsProcessed(true);
-
       const storedAddress = sessionStorage.getItem("shippingAddress");
       const shippingAddress = storedAddress ? JSON.parse(storedAddress) : null;
 
@@ -71,7 +70,6 @@ function StatusContent() {
         customer: {
           name: user?.name || shippingAddress?.name || "Guest",
           email: user?.email || shippingAddress?.email || "guest@example.com",
-          mobile: shippingAddress?.phone || "00000000",
         },
       };
 
@@ -80,7 +78,7 @@ function StatusContent() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            paymentId,
+            paymentId: paymentId,
             orderData: orderPayload,
           }),
         });
@@ -92,21 +90,17 @@ function StatusContent() {
           clearCart();
           sessionStorage.removeItem("shippingAddress");
         } else {
+          console.error("Payment status verification failed:", data);
           setStatus("failed");
         }
       } catch (error) {
-        console.error("Verification failed", error);
+        console.error("Verification network error", error);
         setStatus("failed");
       }
     };
 
-    if (paymentId) {
-      verifyAndSave();
-    } else {
-      setStatus("failed");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paymentId]);
+    verifyAndSave();
+  }, [paymentId, cart, user, clearCart]);
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4 bg-gray-50 dark:bg-transparent">
@@ -154,7 +148,13 @@ function StatusContent() {
 
 export default function PaymentStatusPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex justify-center p-10">
+          <Loader2 className="animate-spin" />
+        </div>
+      }
+    >
       <StatusContent />
     </Suspense>
   );

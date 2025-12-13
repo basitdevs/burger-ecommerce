@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Trash } from "lucide-react";
 import { useCart } from "@/components/context/CartContext";
 import { useRouter } from "next/navigation";
-import { useLanguage } from "@/context/LanguageContext"; // 1. Import Language Context
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function CartPage() {
   const { cart, removeFromCart, updateCartItem } = useCart();
@@ -37,7 +37,7 @@ export default function CartPage() {
     },
   };
 
-  const content = t[language]; 
+  const content = t[language];
 
   const totalPrice = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 

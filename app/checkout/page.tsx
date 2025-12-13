@@ -4,13 +4,12 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Truck, Package } from "lucide-react";
-import { useLanguage } from "@/context/LanguageContext"; // Import the hook
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { language } = useLanguage(); // Get current language
+  const { language } = useLanguage();
 
-  // Translation Dictionary
   const t = {
     en: {
       title: "How would you like to get your order?",
@@ -27,10 +26,13 @@ export default function CheckoutPage() {
   const content = t[language];
 
   const handleOptionSelect = (option: "pickup" | "delivery") => {
+    sessionStorage.setItem("orderType", option);
+
     if (option === "delivery") {
       router.push("/shipping");
     } else {
-      // For pickup, we can go directly to the payment page
+      sessionStorage.removeItem("shippingAddress");
+
       router.push("/payment");
     }
   };
@@ -47,7 +49,7 @@ export default function CheckoutPage() {
             className="w-full py-8 text-lg"
             variant="outline"
           >
-            {/* me-4 adds margin to the "end" (right in English, left in Arabic) */}
+            {/* margin-end handles RTL automatically in Tailwind */}
             <Package className="me-4 h-8 w-8" />
             {content.pickup}
           </Button>

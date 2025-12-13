@@ -6,6 +6,7 @@ export interface Product {
   Title_ar?: string;
   price: number;
   image: string;
+
   categoryId: number;
 }
 
@@ -41,6 +42,7 @@ export interface ShippingDetails {
 }
 
 export interface OrderItemInput {
+  id?: number;
   Title: string;
   Title_ar?: string;
   qty: number;
@@ -53,7 +55,7 @@ export interface CreateOrderInput {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
-  address: ShippingDetails; // This matches your form data
+  address: ShippingDetails;
   totalAmount: number;
   items: OrderItemInput[];
 }
@@ -136,6 +138,16 @@ export async function getRestaurantInfoForAdmin(): Promise<RestaurantInfo | null
 }
 
 
+export async function getOrderByPaymentId(paymentId: string) {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input("paymentId", sql.NVarChar, paymentId)
+    .query("SELECT TOP 1 * FROM dbo.Orders WHERE paymentId = @paymentId");
+  
+  return result.recordset[0] || null;
+}
+
+
 export async function createOrder(data: CreateOrderInput): Promise<boolean> {
   const pool = await getPool();
   const transaction = new sql.Transaction(pool);
@@ -143,8 +155,6 @@ export async function createOrder(data: CreateOrderInput): Promise<boolean> {
   try {
     await transaction.begin();
 
-    // We store the full shipping object as a JSON string in the 'address' column
-    // This ensures Area, Block, Directions, etc. are never lost.
     const addressJson = JSON.stringify(data.address);
 
     const orderRequest = new sql.Request(transaction);
@@ -153,13 +163,12 @@ export async function createOrder(data: CreateOrderInput): Promise<boolean> {
       .input("customerName", sql.NVarChar, data.customerName)
       .input("customerEmail", sql.NVarChar, data.customerEmail)
       .input("customerPhone", sql.NVarChar, data.customerPhone)
-      .input("address", sql.NVarChar, addressJson) // <--- SAVES ALL DETAILS
-      .input("totalAmount", sql.Decimal(18, 3), data.totalAmount)
-      .query(`
+      .input("address", sql.NVarChar, addressJson)
+      .input("totalAmount", sql.Decimal(18, 3), data.totalAmount).query(`
         INSERT INTO dbo.Orders 
-        (paymentId, customerName, customerEmail, customerPhone, address, totalAmount, status)
+        (paymentId, customerName, customerEmail, customerPhone, address, totalAmount, status, created_at, updated_at)
         VALUES 
-        (@paymentId, @customerName, @customerEmail, @customerPhone, @address, @totalAmount, 'PAID');
+        (@paymentId, @customerName, @customerEmail, @customerPhone, @address, @totalAmount, 'PAID', GETDATE(), GETDATE());
         SELECT SCOPE_IDENTITY() AS id;
       `);
 
@@ -169,23 +178,21 @@ export async function createOrder(data: CreateOrderInput): Promise<boolean> {
       const itemRequest = new sql.Request(transaction);
       await itemRequest
         .input("orderId", sql.Int, newOrderId)
+        .input("productId", sql.Int, item.id || null)
         .input("productName", sql.NVarChar, item.Title)
         .input("productNameAr", sql.NVarChar, item.Title_ar || item.Title)
         .input("quantity", sql.Int, item.qty)
         .input("price", sql.Decimal(18, 3), item.price)
-        .input("image", sql.NVarChar, item.image)
-        .query(`
+        .input("image", sql.NVarChar, item.image).query(`
           INSERT INTO dbo.OrderItems 
-          (orderId, productName, productNameAr, quantity, price, image)
+          (orderId, productId, productName, productNameAr, quantity, price, image)
           VALUES 
-          (@orderId, @productName, @productNameAr, @quantity, @price, @image)
+          (@orderId, @productId, @productName, @productNameAr, @quantity, @price, @image)
         `);
     }
 
     await transaction.commit();
-    console.log(`✅ Order #${newOrderId} saved with full shipping details.`);
     return true;
-
   } catch (err) {
     console.error("❌ Error saving order:", err);
     await transaction.rollback();

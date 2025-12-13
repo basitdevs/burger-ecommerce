@@ -3,6 +3,8 @@
 import { useCart } from "@/components/context/CartContext";
 import { useAuth } from "@/components/context/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -27,6 +29,12 @@ export default function PaymentPage() {
   const [shippingInfo, setShippingInfo] = useState<any>(null);
   const [orderType, setOrderType] = useState<string>("pickup");
 
+  const [pickupDetails, setPickupDetails] = useState({
+    name: "",
+    email: "",
+    phone: "",
+  });
+
   useEffect(() => {
     const storedAddress = sessionStorage.getItem("shippingAddress");
     const storedType = sessionStorage.getItem("orderType");
@@ -37,28 +45,46 @@ export default function PaymentPage() {
     if (storedType) {
       setOrderType(storedType);
     }
-  }, []);
+
+    if (user) {
+      setPickupDetails({
+        name: user.name || "",
+        email: user.email || "",
+        phone: "",
+      });
+    }
+  }, [user]);
 
   const t = {
     en: {
       title: "Order Summary",
       desc: "Please review your items before making the payment.",
+      contactDetails: "Contact Details",
+      name: "Full Name",
+      email: "Email Address",
+      phone: "Phone Number",
       qty: "Quantity",
       total: "Total Price",
       payBtn: "Proceed to Payment",
       currency: "KWD",
       deliveryTo: "Delivering to:",
       pickupAt: "Pickup Order",
+      reqFields: "Please fill in all contact details.",
     },
     ar: {
       title: "ملخص الطلب",
       desc: "يرجى مراجعة العناصر قبل إتمام عملية الدفع.",
+      contactDetails: "معلومات الاتصال",
+      name: "الاسم الكامل",
+      email: "البريد الإلكتروني",
+      phone: "رقم الهاتف",
       qty: "الكمية",
       total: "إجمالي المبلغ",
       payBtn: "متابعة الدفع",
       currency: "د.ك",
       deliveryTo: "التوصيل إلى:",
       pickupAt: "استلام من الفرع",
+      reqFields: "يرجى تعبئة جميع معلومات الاتصال.",
     },
   };
 
@@ -66,23 +92,46 @@ export default function PaymentPage() {
   const totalPrice = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   const handlePayment = async () => {
-    setLoading(true);
-
-    sessionStorage.setItem("tempCart", JSON.stringify(cart));
-
-    if (shippingInfo) {
-      sessionStorage.setItem("shippingAddress", JSON.stringify(shippingInfo));
+    if (orderType === "pickup") {
+      if (!pickupDetails.name || !pickupDetails.phone) {
+        toast.error(content.reqFields);
+        return;
+      }
     }
 
-    const customerName = shippingInfo?.name || user?.name || "Guest";
+    setLoading(true);
+
+    let finalShippingInfo = shippingInfo;
+
+    if (orderType === "pickup") {
+      finalShippingInfo = {
+        name: pickupDetails.name,
+        email: pickupDetails.email || "guest@example.com",
+        phone: pickupDetails.phone,
+        area: "Pickup",
+        block: "-",
+        street: "-",
+        house: "-",
+      };
+    }
+
+    sessionStorage.setItem("tempCart", JSON.stringify(cart));
+    sessionStorage.setItem(
+      "shippingAddress",
+      JSON.stringify(finalShippingInfo)
+    );
+
+    const customerName = finalShippingInfo?.name || user?.name || "Guest";
     const customerEmail =
-      shippingInfo?.email || user?.email || "guest@example.com";
+      finalShippingInfo?.email || user?.email || "guest@example.com";
+    const customerPhone = finalShippingInfo?.phone || "";
 
     const origin = typeof window !== "undefined" ? window.location.origin : "";
 
     const payload = {
       CustomerName: customerName,
       CustomerEmail: customerEmail,
+      CustomerMobile: customerPhone,
       InvoiceValue: totalPrice,
       DisplayCurrencyIso: "KWD",
       NotificationOption: "LNK",
@@ -103,7 +152,6 @@ export default function PaymentPage() {
 
       if (data.IsSuccess && data.Data && data.Data.InvoiceURL) {
         toast.success("Redirecting to payment gateway...");
-
         window.location.href = data.Data.InvoiceURL;
       } else {
         const errorMessage = data.ValidationErrors
@@ -138,6 +186,54 @@ export default function PaymentPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Pickup Contact Form */}
+          {orderType === "pickup" && (
+            <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg border mb-4 space-y-3">
+              <h3 className="font-semibold text-sm mb-2">
+                {content.contactDetails}
+              </h3>
+              <div className="space-y-1">
+                <Label className="text-xs">{content.name} *</Label>
+                <Input
+                  value={pickupDetails.name}
+                  onChange={(e) =>
+                    setPickupDetails({ ...pickupDetails, name: e.target.value })
+                  }
+                  placeholder={content.name}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">{content.phone} *</Label>
+                <Input
+                  value={pickupDetails.phone}
+                  onChange={(e) =>
+                    setPickupDetails({
+                      ...pickupDetails,
+                      phone: e.target.value,
+                    })
+                  }
+                  placeholder="12345678"
+                  type="tel"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">{content.email}</Label>
+                <Input
+                  value={pickupDetails.email}
+                  onChange={(e) =>
+                    setPickupDetails({
+                      ...pickupDetails,
+                      email: e.target.value,
+                    })
+                  }
+                  placeholder={content.email}
+                  type="email"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Cart Items */}
           <div className="max-h-60 overflow-y-auto pe-2">
             {cart.map((item) => (
               <div

@@ -34,6 +34,9 @@ function StatusContent() {
         "Thank you! We have received your payment and your order is now being processed.",
       failedTitle: "Payment Failed",
       failedDesc: "We could not verify your payment. No order has been saved.",
+      errorTitle: "Data Missing",
+      errorDesc:
+        "Payment successful, but cart data was lost. Please contact support.",
       homeBtn: "Return to Home",
       retryBtn: "Try Again",
     },
@@ -44,6 +47,9 @@ function StatusContent() {
       successDesc: "شكراً لك! تم استلام دفعتك وجاري تجهيز طلبك الآن.",
       failedTitle: "فشلت عملية الدفع",
       failedDesc: "لم نتمكن من التحقق من الدفع. لم يتم حفظ الطلب.",
+      errorTitle: "البيانات مفقودة",
+      errorDesc:
+        "تم الدفع بنجاح، ولكن فقدت بيانات العربة. يرجى الاتصال بالدعم.",
       homeBtn: "العودة للرئيسية",
       retryBtn: "حاول مرة أخرى",
     },
@@ -62,16 +68,40 @@ function StatusContent() {
 
     const verifyAndSave = async () => {
       const storedAddress = sessionStorage.getItem("shippingAddress");
+      const storedCart = sessionStorage.getItem("tempCart");
+
       const shippingAddress = storedAddress ? JSON.parse(storedAddress) : null;
 
+      let finalCartItems = cart;
+      if (!finalCartItems || finalCartItems.length === 0) {
+        if (storedCart) {
+          try {
+            finalCartItems = JSON.parse(storedCart);
+          } catch (e) {
+            console.error("Failed to parse temp cart");
+          }
+        }
+      }
+
+      if (!finalCartItems || finalCartItems.length === 0) {
+        console.error(
+          "CRITICAL: No cart items found in Context or SessionStorage"
+        );
+      }
+
       const orderPayload = {
-        cartItems: cart,
+        cartItems: finalCartItems,
         shippingAddress: shippingAddress,
         customer: {
           name: user?.name || shippingAddress?.name || "Guest",
           email: user?.email || shippingAddress?.email || "guest@example.com",
         },
       };
+
+      console.log("Verifying payment with payload:", {
+        paymentId,
+        itemsCount: finalCartItems.length,
+      });
 
       try {
         const res = await fetch("/api/payment/verify", {
@@ -88,7 +118,9 @@ function StatusContent() {
         if (data.isSuccess) {
           setStatus("success");
           clearCart();
+
           sessionStorage.removeItem("shippingAddress");
+          sessionStorage.removeItem("tempCart");
         } else {
           console.error("Payment status verification failed:", data);
           setStatus("failed");

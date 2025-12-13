@@ -68,6 +68,12 @@ export default function PaymentPage() {
   const handlePayment = async () => {
     setLoading(true);
 
+    sessionStorage.setItem("tempCart", JSON.stringify(cart));
+
+    if (shippingInfo) {
+      sessionStorage.setItem("shippingAddress", JSON.stringify(shippingInfo));
+    }
+
     const customerName = shippingInfo?.name || user?.name || "Guest";
     const customerEmail =
       shippingInfo?.email || user?.email || "guest@example.com";
@@ -111,7 +117,6 @@ export default function PaymentPage() {
       console.error("Frontend Error:", error);
       toast.error("Something went wrong connecting to the server");
     } finally {
-      setLoading(false);
     }
   };
 

@@ -1,4 +1,3 @@
-// === components/context/CartContext.tsx ===
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
@@ -26,7 +25,6 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isMounted, setIsMounted] = useState(false);
 
-  // Load cart from localStorage ONLY on mount
   useEffect(() => {
     setIsMounted(true);
     if (typeof window !== "undefined") {
@@ -41,7 +39,6 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  // Update localStorage whenever cart changes
   useEffect(() => {
     if (isMounted && typeof window !== "undefined") {
       localStorage.setItem("cart", JSON.stringify(cart));
@@ -74,12 +71,19 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     setCart([]);
     localStorage.removeItem("cart");
   };
-  // Calculate qty, but return 0 if not mounted to prevent hydration mismatch
+
   const cartQty = isMounted ? cart.reduce((sum, item) => sum + item.qty, 0) : 0;
 
   return (
     <CartContext.Provider
-      value={{ cart, cartQty, addToCart, removeFromCart, updateCartItem,clearCart }}
+      value={{
+        cart,
+        cartQty,
+        addToCart,
+        removeFromCart,
+        updateCartItem,
+        clearCart,
+      }}
     >
       {children}
     </CartContext.Provider>

@@ -5,6 +5,9 @@ export async function POST(request: Request) {
   try {
     const { paymentId, orderData } = await request.json();
 
+
+    console.log("Verify API Called with:", { paymentId, orderData });
+
     if (!paymentId) {
       return NextResponse.json({
         isSuccess: false,
@@ -30,6 +33,9 @@ export async function POST(request: Request) {
     );
 
     const data = await res.json();
+
+    console.log("MyFatoorah Response:", data);
+    console.log("Order Data Received:", orderData);
 
     if (data.IsSuccess && data.Data.InvoiceStatus === "Paid") {
       const transaction = data.Data;
